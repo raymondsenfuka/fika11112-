@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Booking | FikaConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .confirmation-summary {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: left;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .confirmation-summary h3 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .summary-item {
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item label {
+            font-weight: 600;
+            color: #555;
+            flex-basis: 35%;
+            margin-right: 15px;
+        }
+
+        .summary-item span {
+            color: #333;
+            flex-basis: 65%;
+            text-align: right;
+            word-wrap: break-word; /* Ensure long texts wrap */
+        }
+
+        .total-price-display {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--dark-text);
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .payment-options {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .payment-options h4 {
+            font-size: 1.3em;
+            color: #444;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .payment-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .payment-method-card {
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            max-width: 250px;
+        }
+        .payment-method-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+        }
+        .payment-method-card.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.4);
+            background-color: #eaf5ff;
+        }
+        .payment-method-card img {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .payment-method-card p {
+            font-weight: 600;
+            color: #333;
+        }
+        .confirm-btn-container {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        /* Message styles (reused from book-and-track.html) */
+        .booking-message {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .booking-message.info {
+            background-color: #e7f3fe;
+            color: #0c5460;
+            border: 1px solid #b8daff;
+        }
+        .booking-message.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .booking-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .booking-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .loading-spinner {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: var(--primary-color);
+        }
+        .loading-spinner i {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div class="container">
+            <h1><a href="landing.html">FikaConnect</a></h1>
+            <nav class="main-nav">
+                <a href="sender-dashboard.html">Dashboard</a>
+                <a href="about.html">About Us</a>
+                <a href="#" id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container form-container auth-form">
+        <h2><i class="fas fa-check-circle"></i> Confirm Your Booking</h2>
+
+        <div id="confirmationSummary" class="confirmation-summary" style="display: none;">
+            <h3>Booking Details Review</h3>
+
+            <div class="summary-item">
+                <label>Customer Name:</label>
+                <span id="customerNameDisplay"></span>
+            </div>
+            <div class="summary-item">
+                <label>Customer Contact:</label>
+                <span id="customerContactDisplay"></span>
+            </div>
+            <div class="summary-item">
+                <label>Delivery Type:</label>
+                <span id="deliveryTypeDisplay"></span>
+            </div>
+
+            <div id="directDeliveryDetails" style="display: none;">
+                <div class="summary-item">
+                    <label>Pickup Location:</label>
+                    <span id="pickupLocationDisplayDirect"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Drop-off Location:</label>
+                    <span id="dropoffLocationDisplayDirect"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Recipient Name:</label>
+                    <span id="recipientNameDisplayDirect"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Recipient Contact:</label>
+                    <span id="recipientContactDisplayDirect"></span>
+                </div>
+            </div>
+
+            <div id="collectionPointDetails" style="display: none;">
+                <div class="summary-item">
+                    <label>Pickup FikaConnect Center:</label>
+                    <span id="pickupLocationDisplayCollection"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Destination FikaConnect Center:</label>
+                    <span id="dropoffLocationDisplayCollection"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Recipient Name (at center):</label>
+                    <span id="recipientNameDisplayCollection"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Recipient Contact (at center):</label>
+                    <span id="recipientContactDisplayCollection"></span>
+                </div>
+            </div>
+
+            <div class="summary-item">
+                <label>Cargo Type:</label>
+                <span id="cargoTypeDisplay"></span>
+            </div>
+            <div class="summary-item">
+                <label>Package Description:</label>
+                <span id="packageDescriptionDisplay"></span>
+            </div>
+            <div class="summary-item">
+                <label>Weight:</label>
+                <span id="packageWeightDisplay"></span>
+            </div>
+            <div class="summary-item">
+                <label>Fragile:</label>
+                <span id="isFragileDisplay"></span>
+            </div>
+        </div>
+
+        <div id="totalPriceDisplay" class="total-price-display" style="display: none;">
+            Total Amount Due: <span id="finalTotalPrice">UGX 0</span>
+        </div>
+
+        <div id="paymentOptions" class="payment-options" style="display: none;">
+            <h4>Choose Payment Method</h4>
+            <div class="payment-methods">
+                <div class="payment-method-card" data-method="mtn-momo">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/MTN_Mobile_Money_logo.svg/langru-280px-MTN_Mobile_Money_logo.svg.png" alt="MTN MoMo">
+                    <p>MTN Mobile Money</p>
+                </div>
+                <div class="payment-method-card" data-method="airtel-money">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Airtel_Money_Logo.svg/langru-280px-Airtel_Money_Logo.svg.png" alt="Airtel Money">
+                    <p>Airtel Money</p>
+                </div>
+                </div>
+            <div class="confirm-btn-container">
+                <button type="button" id="confirmPaymentBtn" class="primary-btn" disabled><i class="fas fa-money-check-alt"></i> Confirm & Pay</button>
+            </div>
+        </div>
+
+        <div id="generalMessage" class="booking-message" style="display: none;"></div>
+        <div id="loadingMessage" class="loading-spinner" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Processing...
+        </div>
+
+        <div id="bookingSuccessMessage" class="booking-message success" style="display: none;">
+            <h2><i class="fas fa-check-circle"></i> Booking Confirmed!</h2>
+            <p>Your booking has been successfully placed. Provisional ID: <span id="finalBookingId"></span></p>
+            <p>You will receive an SMS with further details shortly.</p>
+            <div class="success-actions">
+                <button type="button" class="primary-btn" onclick="window.location.href='sender-dashboard.html'"><i class="fas fa-truck"></i> View My Deliveries</button>
+                <button type="button" class="secondary-btn" onclick="window.location.href='book-and-track.html'"><i class="fas fa-plus-circle"></i> Book Another Delivery</button>
+            </div>
+        </div>
+        
+    </main>
+
+    <footer class="page-footer">
+        <div class="container">
+            <p>&copy; 2025 FikaConnect — Smart Logistics for East Africa</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU", // Use your actual API Key
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "124223307329",
+            appId: "1:124223307329:web:76c547b91dcd25205550c0"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- DOM Elements ---
+        const logoutBtn = document.getElementById('logoutBtn');
+        const confirmationSummaryDiv = document.getElementById('confirmationSummary');
+        const totalPriceDisplayDiv = document.getElementById('totalPriceDisplay');
+        const paymentOptionsDiv = document.getElementById('paymentOptions');
+        const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+        const generalMessageDiv = document.getElementById('generalMessage');
+        const loadingMessageDiv = document.getElementById('loadingMessage');
+        const bookingSuccessMessageDiv = document.getElementById('bookingSuccessMessage');
+        const finalBookingIdSpan = document.getElementById('finalBookingId');
+
+        // Summary Display Elements
+        const customerNameDisplay = document.getElementById('customerNameDisplay');
+        const customerContactDisplay = document.getElementById('customerContactDisplay');
+        const deliveryTypeDisplay = document.getElementById('deliveryTypeDisplay');
+        const directDeliveryDetails = document.getElementById('directDeliveryDetails');
+        const pickupLocationDisplayDirect = document.getElementById('pickupLocationDisplayDirect');
+        const dropoffLocationDisplayDirect = document.getElementById('dropoffLocationDisplayDirect');
+        const recipientNameDisplayDirect = document.getElementById('recipientNameDisplayDirect');
+        const recipientContactDisplayDirect = document.getElementById('recipientContactDisplayDirect');
+        const collectionPointDetails = document.getElementById('collectionPointDetails');
+        const pickupLocationDisplayCollection = document.getElementById('pickupLocationDisplayCollection');
+        const dropoffLocationDisplayCollection = document.getElementById('dropoffLocationDisplayCollection');
+        const recipientNameDisplayCollection = document.getElementById('recipientNameDisplayCollection');
+        const recipientContactDisplayCollection = document.getElementById('recipientContactDisplayCollection');
+        const cargoTypeDisplay = document.getElementById('cargoTypeDisplay');
+        const packageDescriptionDisplay = document.getElementById('packageDescriptionDisplay');
+        const packageWeightDisplay = document.getElementById('packageWeightDisplay');
+        const isFragileDisplay = document.getElementById('isFragileDisplay');
+        const finalTotalPriceSpan = document.getElementById('finalTotalPrice');
+
+        // --- Global Variables ---
+        let currentBookingData = null;
+        let selectedPaymentMethod = null;
+        let CURRENT_SENDER_ID = null;
+
+        // --- Event Listeners ---
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
+
+        document.querySelectorAll('.payment-method-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedPaymentMethod = card.dataset.method;
+                confirmPaymentBtn.disabled = false;
+            });
+        });
+
+        confirmPaymentBtn.addEventListener('click', finalizeBooking);
+
+        // --- Authentication State Listener ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                CURRENT_SENDER_ID = user.uid;
+                // Fetch user data to confirm name and contact if not already in session storage
+                const userDocRef = doc(db, "users", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    // This data should ideally come from session storage or be consistently passed
+                    // For now, ensure it's set if missing or for verification
+                    // customerNameDisplay.textContent = userDocSnap.data().name || "N/A";
+                    // customerContactDisplay.textContent = user.phoneNumber || user.email || "N/A";
+                } else {
+                    alert("User data not found. Please complete your profile or log in again.");
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                }
+                loadBookingData();
+            } else {
+                window.location.href = 'login.html'; // Redirect to login if not authenticated
+            }
+        });
+
+        // --- Load Booking Data from Session Storage ---
+        function loadBookingData() {
+            const storedData = sessionStorage.getItem('fikaConnectBookingData');
+            if (storedData) {
+                currentBookingData = JSON.parse(storedData);
+                displayBookingDetails(currentBookingData);
+                confirmationSummaryDiv.style.display = 'block';
+                totalPriceDisplayDiv.style.display = 'block';
+                paymentOptionsDiv.style.display = 'block';
+                hideGeneralMessage();
+            } else {
+                showGeneralMessage("No booking details found. Please go back and book a delivery.", "warning");
+                // Optionally redirect back to booking page
+                setTimeout(() => { window.location.href = 'book-and-track.html'; }, 3000);
+            }
+        }
+
+        function displayBookingDetails(data) {
+            customerNameDisplay.textContent = data.customerName || "N/A";
+            customerContactDisplay.textContent = data.customerContact || "N/A";
+            deliveryTypeDisplay.textContent = data.deliveryType === 'direct_delivery' ? 'Direct Delivery' : 'FikaConnect Center Transfer';
+
+            // Parcel Details
+            cargoTypeDisplay.textContent = data.parcelDetails.type || "N/A";
+            packageDescriptionDisplay.textContent = data.parcelDetails.description || "N/A";
+            packageWeightDisplay.textContent = `${data.parcelDetails.weightKg} kg` || "N/A";
+            isFragileDisplay.textContent = data.parcelDetails.isFragile ? 'Yes' : 'No';
+
+            // Delivery Type Specific Details
+            if (data.deliveryType === 'direct_delivery') {
+                directDeliveryDetails.style.display = 'block';
+                collectionPointDetails.style.display = 'none';
+                pickupLocationDisplayDirect.textContent = data.pickupLocation.name || "N/A";
+                dropoffLocationDisplayDirect.textContent = data.dropoffLocation.name || "N/A";
+                recipientNameDisplayDirect.textContent = data.recipient.name || "N/A";
+                recipientContactDisplayDirect.textContent = data.recipient.contact || "N/A";
+            } else { // collection_point_pickup
+                directDeliveryDetails.style.display = 'none';
+                collectionPointDetails.style.display = 'block';
+                pickupLocationDisplayCollection.textContent = `${data.pickupLocation.name} (${data.pickupLocation.locationName})` || "N/A";
+                dropoffLocationDisplayCollection.textContent = `${data.dropoffLocation.name} (${data.dropoffLocation.locationName})` || "N/A";
+                recipientNameDisplayCollection.textContent = data.recipient.name || "N/A";
+                recipientContactDisplayCollection.textContent = data.recipient.contact || "N/A";
+            }
+
+            finalTotalPriceSpan.textContent = `UGX ${data.fareAmount.toLocaleString()}`;
+        }
+
+        // --- Finalize Booking (Payment & Firestore Storage) ---
+        async function finalizeBooking() {
+            if (!selectedPaymentMethod) {
+                showGeneralMessage("Please select a payment method.", "warning");
+                return;
+            }
+            if (!currentBookingData) {
+                showGeneralMessage("Booking data missing. Please go back to book a delivery.", "error");
+                setTimeout(() => { window.location.href = 'book-and-track.html'; }, 3000);
+                return;
+            }
+
+            // Simulate payment processing
+            showLoadingMessage("Initiating payment...");
+            confirmPaymentBtn.disabled = true;
+
+            try {
+                // In a real application, you would integrate with a payment gateway here (e.g., MTN MoMo API, Stripe, etc.)
+                // This would involve sending the currentBookingData.fareAmount and recipient details to the payment gateway.
+                // For demonstration, we'll just simulate success after a delay.
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2-second payment processing
+
+                // After successful payment, store the booking in Firestore
+                const bookingRef = await addDoc(collection(db, "bookings"), {
+                    ...currentBookingData,
+                    status: "Pending Driver Assignment", // Initial status after payment
+                    paymentStatus: "Paid",
+                    paymentMethod: selectedPaymentMethod,
+                    bookingDate: serverTimestamp(),
+                    driverId: null, // No driver assigned yet
+                    assignedDriver: null,
+                    pickupLat: currentBookingData.pickupLocation.lat || null, // Store explicit lat/lng for search/driver app
+                    pickupLng: currentBookingData.pickupLocation.lng || null,
+                    dropoffLat: currentBookingData.dropoffLocation.lat || null,
+                    dropoffLng: currentBookingData.dropoffLocation.lng || null,
+                    isFragile: currentBookingData.parcelDetails.isFragile, // Ensure boolean value
+                    // Add other fields as needed for tracking/history
+                });
+
+                hideLoadingMessage();
+                showBookingSuccessMessage(bookingRef.id);
+
+                // Clear session storage after successful booking
+                sessionStorage.removeItem('fikaConnectBookingData');
+
+            } catch (error) {
+                console.error("Error finalizing booking:", error);
+                hideLoadingMessage();
+                showGeneralMessage("Payment or booking finalization failed. Please try again.", "error");
+                confirmPaymentBtn.disabled = false; // Re-enable button on error
+            }
+        }
+
+        // --- Message Display Functions ---
+        function showGeneralMessage(message, type = 'info') {
+            generalMessageDiv.textContent = message;
+            generalMessageDiv.className = `booking-message ${type}`;
+            generalMessageDiv.style.display = 'block';
+        }
+
+        function hideGeneralMessage() {
+            generalMessageDiv.style.display = 'none';
+        }
+
+        function showLoadingMessage(message = "Loading...") {
+            loadingMessageDiv.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${message}`;
+            loadingMessageDiv.style.display = 'block';
+            hideGeneralMessage();
+        }
+
+        function hideLoadingMessage() {
+            loadingMessageDiv.style.display = 'none';
+        }
+
+        function showBookingSuccessMessage(bookingId) {
+            confirmationSummaryDiv.style.display = 'none';
+            totalPriceDisplayDiv.style.display = 'none';
+            paymentOptionsDiv.style.display = 'none';
+            generalMessageDiv.style.display = 'none';
+            loadingMessageDiv.style.display = 'none';
+
+            finalBookingIdSpan.textContent = bookingId;
+            bookingSuccessMessageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

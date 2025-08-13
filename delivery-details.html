@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Details | FikaConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Specific styles for this page */
+        .page-header h1 {
+            color: var(--primary-color);
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .details-section {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .details-section h2 {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-item i {
+            font-size: 1.2em;
+            color: var(--primary-color);
+            margin-right: 15px;
+            width: 25px; /* Fixed width for icons */
+            text-align: center;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+            min-width: 120px; /* Align labels */
+            flex-shrink: 0;
+        }
+
+        .detail-value {
+            color: #555;
+            flex-grow: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 10px;
+        }
+
+        /* Status-specific badge colors (replicated from active deliveries page for consistency) */
+        .status-badge.pending { background-color: #ffe0b2; color: #e65100; }
+        .status-badge.assigned { background-color: #bbdefb; color: #1976d2; }
+        .status-badge.out-for-delivery { background-color: #c8e6c9; color: #388e3c; }
+        .status-badge.delivered { background-color: #e0f2f7; color: #00838f; }
+        .status-badge.cancelled { background-color: #ffcdd2; color: #d32f2f; }
+        .status-badge.problem { background-color: #ffccbc; color: #f4511e; }
+
+        .loading-message, .error-message, .not-found-message {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 1.2em;
+            color: #777;
+        }
+        .error-message { color: #dc3545; }
+        .not-found-message { color: #ffc107; }
+
+        .back-button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="page-header">
+        <div class="container">
+            <h1><a href="landing.html">FikaConnect</a></h1>
+            <nav class="main-nav">
+                <a href="sender-dashboard.html">Dashboard</a>
+                <a href="book-new-delivery.html">Book New</a>
+                <a href="sender-active-deliveries.html">My Deliveries</a>
+                <a href="about.html">About Us</a>
+                <a href="#" id="logoutBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="details-section">
+            <h2 id="deliveryDetailsTitle"><i class="fas fa-info-circle"></i> Delivery Details</h2>
+            <div id="loadingMessage" class="loading-message">
+                <i class="fas fa-spinner fa-spin"></i> Loading delivery details...
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="notFoundMessage" class="not-found-message" style="display: none;">
+                Delivery not found or you do not have permission to view it.
+            </div>
+
+            <div id="deliveryDetailsContent" style="display: none;">
+                <div class="detail-item">
+                    <i class="fas fa-hashtag"></i> <span class="detail-label">Booking ID:</span> <span id="detailBookingId" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-calendar-alt"></i> <span class="detail-label">Booking Date:</span> <span id="detailBookingDate" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-hand-holding-box"></i> <span class="detail-label">Delivery Type:</span> <span id="detailDeliveryType" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-map-marker-alt"></i> <span class="detail-label">Pickup Location:</span> <span id="detailPickupLocation" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-location-dot"></i> <span class="detail-label">Drop-off Location:</span> <span id="detailDropoffLocation" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-user-tag"></i> <span class="detail-label">Sender Name:</span> <span id="detailCustomerName" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-phone-alt"></i> <span class="detail-label">Sender Contact:</span> <span id="detailCustomerContact" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-user"></i> <span class="detail-label">Recipient Name:</span> <span id="detailRecipientName" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-mobile-alt"></i> <span class="detail-label">Recipient Contact:</span> <span id="detailRecipientContact" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-box-open"></i> <span class="detail-label">Parcel Type:</span> <span id="detailParcelType" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-weight-hanging"></i> <span class="detail-label">Weight (kg):</span> <span id="detailParcelWeight" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-thermometer-half"></i> <span class="detail-label">Fragile:</span> <span id="detailIsFragile" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-money-bill-wave"></i> <span class="detail-label">Fare Amount:</span> <span id="detailFareAmount" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-route"></i> <span class="detail-label">Distance (km):</span> <span id="detailDistanceKm" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-user-tie"></i> <span class="detail-label">Assigned Driver:</span> <span id="detailAssignedDriver" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-info-circle"></i> <span class="detail-label">Current Status:</span> <span id="detailStatus" class="detail-value"></span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-credit-card"></i> <span class="detail-label">Payment Status:</span> <span id="detailPaymentStatus" class="detail-value"></span>
+                </div>
+                </div>
+            <div class="back-button-container">
+                <a href="sender-active-deliveries.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to My Deliveries</a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="page-footer">
+        <div class="container">
+            <p>&copy; 2025 FikaConnect — Smart Logistics for East Africa</p>
+        </div>
+    </footer>
+
+    <script type="module">
+        'use strict';
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Firebase Configuration ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU", // Ensure this is your correct Firebase API key
+                authDomain: "fika-connect-5f844.firebaseapp.com",
+                projectId: "fika-connect-5f844",
+                storageBucket: "fika-connect-5f844.appspot.com",
+                messagingSenderId: "124223307329",
+                appId: "1:124223307329:web:76c547b91dcd25205550c0"
+            };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            // --- DOM Elements ---
+            const logoutBtn = document.getElementById('logoutBtn');
+            const deliveryDetailsTitle = document.getElementById('deliveryDetailsTitle');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const notFoundMessage = document.getElementById('notFoundMessage');
+            const deliveryDetailsContent = document.getElementById('deliveryDetailsContent');
+
+            // Detail fields
+            const detailBookingId = document.getElementById('detailBookingId');
+            const detailBookingDate = document.getElementById('detailBookingDate');
+            const detailDeliveryType = document.getElementById('detailDeliveryType');
+            const detailPickupLocation = document.getElementById('detailPickupLocation');
+            const detailDropoffLocation = document.getElementById('detailDropoffLocation');
+            const detailCustomerName = document.getElementById('detailCustomerName');
+            const detailCustomerContact = document.getElementById('detailCustomerContact');
+            const detailRecipientName = document.getElementById('detailRecipientName');
+            const detailRecipientContact = document.getElementById('detailRecipientContact');
+            const detailParcelType = document.getElementById('detailParcelType');
+            const detailParcelWeight = document.getElementById('detailParcelWeight');
+            const detailIsFragile = document.getElementById('detailIsFragile');
+            const detailFareAmount = document.getElementById('detailFareAmount');
+            const detailDistanceKm = document.getElementById('detailDistanceKm');
+            const detailAssignedDriver = document.getElementById('detailAssignedDriver');
+            const detailStatus = document.getElementById('detailStatus');
+            const detailPaymentStatus = document.getElementById('detailPaymentStatus');
+
+            let CURRENT_USER_ID = null;
+            let bookingId = null; // To store the booking ID from the URL
+
+            // --- Event Listeners ---
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                });
+            }
+
+            // --- Authentication State Listener ---
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    CURRENT_USER_ID = user.uid;
+                    console.log("Firebase: User is logged in, UID:", user.uid);
+                    bookingId = new URLSearchParams(window.location.search).get('bookingId');
+                    if (bookingId) {
+                        fetchAndDisplayBookingDetails(CURRENT_USER_ID, bookingId);
+                    } else {
+                        console.error("No booking ID found in URL.");
+                        loadingMessage.style.display = 'none';
+                        errorMessage.textContent = "No booking ID provided in the URL.";
+                        errorMessage.style.display = 'block';
+                    }
+                } else {
+                    console.log("Firebase: User not logged in, redirecting to login.html");
+                    window.location.href = 'login.html';
+                }
+            });
+
+            // --- Fetch and Display Booking Details (Real-time) ---
+            function fetchAndDisplayBookingDetails(userId, id) {
+                console.log(`Fetching details for booking ID: ${id} for user: ${userId}`);
+                loadingMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                notFoundMessage.style.display = 'none';
+                deliveryDetailsContent.style.display = 'none';
+
+                const bookingRef = doc(db, "bookings", id);
+
+                // Use onSnapshot for real-time updates of a single document
+                onSnapshot(bookingRef, (docSnap) => {
+                    loadingMessage.style.display = 'none';
+
+                    if (docSnap.exists() && docSnap.data().customerId === userId) {
+                        const booking = docSnap.data();
+                        console.log("Booking data fetched:", booking);
+
+                        deliveryDetailsContent.style.display = 'block';
+                        deliveryDetailsTitle.textContent = `Delivery Details for #${id.substring(0, 8)}...`;
+
+                        detailBookingId.textContent = id;
+                        detailBookingDate.textContent = booking.bookingDate?.toDate ? booking.bookingDate.toDate().toLocaleString() : 'N/A';
+                        detailDeliveryType.textContent = formatDeliveryType(booking.deliveryType);
+                        detailPickupLocation.textContent = booking.pickupLocation?.name || 'N/A';
+                        detailDropoffLocation.textContent = booking.dropoffLocation?.name || 'N/A';
+                        detailCustomerName.textContent = booking.customerName || 'N/A';
+                        detailCustomerContact.textContent = booking.customerContact || 'N/A';
+                        detailRecipientName.textContent = booking.recipient?.name || 'N/A';
+                        detailRecipientContact.textContent = booking.recipient?.contact || 'N/A';
+                        detailParcelType.textContent = booking.parcelDetails?.type || 'N/A';
+                        detailParcelWeight.textContent = booking.parcelDetails?.weightKg ? `${booking.parcelDetails.weightKg} kg` : 'N/A';
+                        detailIsFragile.textContent = booking.parcelDetails?.isFragile ? 'Yes' : 'No';
+                        detailFareAmount.textContent = booking.fareAmount ? `UGX ${booking.fareAmount.toLocaleString()}` : 'N/A';
+                        detailDistanceKm.textContent = booking.distanceKm ? `${booking.distanceKm.toFixed(2)} km` : 'N/A';
+                        detailAssignedDriver.textContent = booking.assignedDriverName || 'Not Assigned Yet';
+
+                        // Set status with badge styling
+                        const status = booking.status || 'Unknown';
+                        let statusClass = '';
+                        switch (status) {
+                            case 'Pending Driver Assignment': statusClass = 'pending'; break;
+                            case 'Driver Assigned': statusClass = 'assigned'; break;
+                            case 'Out for Delivery': statusClass = 'out-for-delivery'; break;
+                            case 'Delivered': statusClass = 'delivered'; break;
+                            case 'Cancelled': statusClass = 'cancelled'; break;
+                            default: statusClass = 'problem';
+                        }
+                        detailStatus.innerHTML = `${status} <span class="status-badge ${statusClass}">${status}</span>`;
+
+                        detailPaymentStatus.textContent = booking.paymentStatus || 'N/A';
+
+                    } else if (docSnap.exists() && docSnap.data().customerId !== userId) {
+                        console.warn("Booking found, but user does not have permission to view it.");
+                        notFoundMessage.textContent = "You do not have permission to view this delivery.";
+                        notFoundMessage.style.display = 'block';
+                    } else {
+                        console.warn("Booking not found:", id);
+                        notFoundMessage.style.display = 'block';
+                    }
+                }, (error) => {
+                    console.error("Error fetching real-time booking details:", error);
+                    loadingMessage.style.display = 'none';
+                    errorMessage.textContent = `Error loading details: ${error.message}. Please try again later.`;
+                    errorMessage.style.display = 'block';
+                });
+            }
+
+            function formatDeliveryType(type) {
+                if (!type) return 'N/A';
+                return type.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            }
+
+        }); // End DOMContentLoaded
+    </script>
+</body>
+</html>

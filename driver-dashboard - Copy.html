@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 20px;
+        }
+        .section-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delivery-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .delivery-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            position: relative;
+        }
+        .delivery-card:hover {
+            transform: translateY(-5px);
+        }
+        .delivery-card h3 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+        .delivery-card p {
+            margin: 5px 0;
+        }
+        .delivery-card .status {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-Pending-Driver-Assignment { color: orange; }
+        .status-Picked-Up { color: #007bff; }
+        .status-In-Transit { color: #28a745; }
+        .status-Delivered { color: green; }
+        .status-Cancelled { color: red; }
+        .action-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 5px;
+            transition: opacity 0.2s;
+        }
+        .action-btn.accept { background-color: #007bff; }
+        .action-btn.picked-up { background-color: #17a2b8; }
+        .action-btn.in-transit { background-color: #ffc107; }
+        .action-btn.delivered { background-color: #28a745; }
+        .action-btn.chat-btn { background-color: #007bff; }
+        .action-btn.call-btn { background-color: #5cb85c; }
+        .action-btn:hover { opacity: 0.9; }
+        .driver-profile {
+            text-align: right;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .driver-profile p {
+            margin: 0;
+            font-weight: bold;
+        }
+        .driver-rating {
+            font-size: 1.2em;
+            color: #ffc107;
+        }
+        .map-placeholder {
+            width: 100%;
+            height: 150px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            text-align: center;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: #28a745;
+            border-radius: 5px;
+            transition: width 0.4s ease-in-out;
+        }
+        .notification-bell {
+            position: relative;
+        }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            display: none;
+        }
+        
+        /* Modal and Chat Specific Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            max-height: 80%;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .chat-header {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .message-input-container {
+            display: flex;
+        }
+        .message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        .send-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .message {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+        .message.sent {
+            background-color: #dcf8c6;
+            text-align: right;
+        }
+        .message.received {
+            background-color: #e5e5ea;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="driver-profile">
+            <div>
+                <p>Welcome, <span id="driver-name">Driver</span>!</p>
+                <p>Completed Deliveries: <span id="completed-deliveries">0</span></p>
+                <p class="driver-rating">Rating: <span id="driver-rating">N/A</span> ⭐</p>
+            </div>
+            <div class="notification-bell">
+                🔔 <span class="notification-count" id="notification-count">0</span>
+            </div>
+        </div>
+
+        <h1>Driver Dashboard</h1>
+
+        <h2 class="section-header">Available Deliveries</h2>
+        <div class="delivery-cards-container" id="available-deliveries-container">
+            <p id="no-available-deliveries" style="text-align: center;">No new deliveries available.</p>
+        </div>
+
+        <h2 class="section-header">My Accepted Deliveries</h2>
+        <div class="delivery-cards-container" id="accepted-deliveries-container">
+            <p id="no-accepted-deliveries" style="text-align: center;">You have no active deliveries.</p>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="chat-header">Chat with Customer</div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be rendered here -->
+            </div>
+            <div class="message-input-container">
+                <input type="text" id="chat-input" class="message-input" placeholder="Type a message...">
+                <button id="send-btn" class="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "492360448361",
+            appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const availableContainer = document.getElementById("available-deliveries-container");
+        const acceptedContainer = document.getElementById("accepted-deliveries-container");
+        const noAvailableText = document.getElementById("no-available-deliveries");
+        const noAcceptedText = document.getElementById("no-accepted-deliveries");
+        const driverNameEl = document.getElementById("driver-name");
+        const completedDeliveriesEl = document.getElementById("completed-deliveries");
+        const driverRatingEl = document.getElementById("driver-rating");
+        const notificationCountEl = document.getElementById("notification-count");
+        
+        // Chat Modal Elements
+        const chatModal = document.getElementById("chatModal");
+        const closeModalBtn = document.querySelector(".close-btn");
+        const chatMessagesEl = document.getElementById("chat-messages");
+        const chatInput = document.getElementById("chat-input");
+        const sendBtn = document.getElementById("send-btn");
+
+        let currentDriverId = null;
+        let currentChatDeliveryId = null;
+        let chatUnsubscribe = null;
+
+        function renderAvailableCard(doc) {
+            const data = doc.data();
+            const cardId = `available-card-${doc.id}`;
+            let card = document.getElementById(cardId);
+            
+            if (!card) {
+                card = document.createElement("div");
+                card.id = cardId;
+                card.className = "delivery-card";
+                availableContainer.appendChild(card);
+            }
+
+            const pickupInfo = data.deliveryType === 'direct' ? `Lat: ${data.pickup.lat}, Lng: ${data.pickup.lng}` : data.pickup.name;
+            const dropoffInfo = data.deliveryType === 'direct' ? `Lat: ${data.dropoff.lat}, Lng: ${data.dropoff.lng}` : data.dropoff.name;
+            
+            card.innerHTML = `
+                <h3>Booking ID: ${doc.id}</h3>
+                <div class="map-placeholder">Map showing route from Pickup to Drop-off</div>
+                <p><strong>Pickup Location:</strong> ${pickupInfo}</p>
+                <p><strong>Drop-off Location:</strong> ${dropoffInfo}</p>
+                <hr>
+                <p><strong>Total Fare:</strong> UGX ${data.fareDetails.totalFare.toLocaleString()}</p>
+                <button class="action-btn accept" data-booking-id="${doc.id}">Accept Delivery</button>
+            `;
+            noAvailableText.style.display = "none";
+        }
+
+        function renderAcceptedCard(doc) {
+            const data = doc.data();
+            const cardId = `accepted-card-${doc.id}`;
+            let card = document.getElementById(cardId);
+            
+            if (!card) {
+                card = document.createElement("div");
+                card.id = cardId;
+                card.className = "delivery-card";
+                acceptedContainer.appendChild(card);
+            }
+            
+            const pickupInfo = data.deliveryType === 'direct' ? `Lat: ${data.pickup.lat}, Lng: ${data.pickup.lng}` : data.pickup.name;
+            const dropoffInfo = data.deliveryType === 'direct' ? `Lat: ${data.dropoff.lat}, Lng: ${data.dropoff.lng}` : data.dropoff.name;
+
+            let progressWidth;
+            if (data.status === "Picked Up") {
+                progressWidth = 33;
+            } else if (data.status === "In Transit") {
+                progressWidth = 66;
+            } else if (data.status === "Delivered") {
+                progressWidth = 100;
+            } else {
+                progressWidth = 0;
+            }
+
+            card.innerHTML = `
+                <h3>Booking ID: ${doc.id}</h3>
+                <p><strong>Status:</strong> <span class="status status-${data.status.replace(/\s+/g, '-')}">${data.status}</span></p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${progressWidth}%;"></div>
+                </div>
+                <p><strong>Sender Name:</strong> ${data.senderName}</p>
+                <p><strong>Recipient Name:</strong> ${data.recipientName}</p>
+                <p><strong>Recipient Number:</strong> ${data.recipientNumber}</p>
+                <p><strong>Pickup Location:</strong> <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pickupInfo)}" target="_blank">Navigate</a></p>
+                <p><strong>Drop-off Location:</strong> ${dropoffInfo}</p>
+                <hr>
+                <p><strong>Total Fare:</strong> UGX ${data.fareDetails.totalFare.toLocaleString()}</p>
+                <div class="status-actions">
+                    <button class="action-btn chat-btn" data-booking-id="${doc.id}">Chat with Customer</button>
+                    <a href="tel:${data.recipientNumber}" class="action-btn call-btn">Call Customer</a>
+                    ${data.status === "Picked Up" ? `<button class="action-btn in-transit" data-booking-id="${doc.id}" data-new-status="In Transit">Mark as In Transit</button>` : ''}
+                    ${data.status === "In Transit" ? `<button class="action-btn delivered" data-booking-id="${doc.id}" data-new-status="Delivered">Mark as Delivered</button>` : ''}
+                </div>
+            `;
+            noAcceptedText.style.display = "none";
+        }
+
+        // --- Chat Modal Functions ---
+        function openChatModal(bookingId) {
+            currentChatDeliveryId = bookingId;
+            chatModal.style.display = "flex";
+            chatMessagesEl.innerHTML = ""; // Clear previous messages
+            
+            // Set up a Firestore listener for the chat
+            const chatDocRef = db.collection("chats").doc(bookingId);
+            chatUnsubscribe = chatDocRef.onSnapshot(doc => {
+                const chatData = doc.data();
+                chatMessagesEl.innerHTML = ""; // Clear messages before re-rendering
+                if (chatData && chatData.messages) {
+                    chatData.messages.forEach(message => {
+                        const messageEl = document.createElement("div");
+                        messageEl.classList.add("message");
+                        messageEl.classList.add(message.senderId === currentDriverId ? "sent" : "received");
+                        messageEl.textContent = message.text;
+                        chatMessagesEl.appendChild(messageEl);
+                    });
+                    // Scroll to the bottom of the chat
+                    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+                }
+            }, err => {
+                console.error("Error listening to chat messages:", err);
+            });
+        }
+
+        function closeChatModal() {
+            chatModal.style.display = "none";
+            if (chatUnsubscribe) {
+                chatUnsubscribe(); // Unsubscribe from the chat listener
+            }
+            currentChatDeliveryId = null;
+        }
+
+        function sendMessage() {
+            const messageText = chatInput.value.trim();
+            if (messageText === "") return;
+
+            const chatDocRef = db.collection("chats").doc(currentChatDeliveryId);
+            
+            chatDocRef.get().then(doc => {
+                const newChatMessage = {
+                    text: messageText,
+                    senderId: currentDriverId,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (doc.exists) {
+                    // Chat document exists, update with new message
+                    chatDocRef.update({
+                        messages: firebase.firestore.FieldValue.arrayUnion(newChatMessage)
+                    });
+                } else {
+                    // Chat document does not exist, create it
+                    chatDocRef.set({
+                        messages: [newChatMessage]
+                    });
+                }
+                chatInput.value = ""; // Clear the input field
+            }).catch(error => {
+                console.error("Error sending message:", error);
+            });
+        }
+
+        // --- Event Listeners ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentDriverId = user.uid;
+                
+                // Fetch driver details
+                db.collection("drivers").doc(currentDriverId).get().then(doc => {
+                    if (doc.exists) {
+                        const driverData = doc.data();
+                        driverNameEl.textContent = driverData.name || "Driver";
+                        completedDeliveriesEl.textContent = driverData.completedDeliveries || 0;
+                        driverRatingEl.textContent = driverData.rating ? `${driverData.rating.toFixed(1)}/5` : "N/A";
+                    }
+                });
+
+                // Real-time listener for available deliveries
+                db.collection("deliveries").where("status", "==", "Pending Driver Assignment")
+                    .onSnapshot(snapshot => {
+                        const existingIds = new Set();
+                        snapshot.forEach(doc => {
+                            existingIds.add(doc.id);
+                            renderAvailableCard(doc);
+                        });
+                        
+                        availableContainer.querySelectorAll('.delivery-card').forEach(card => {
+                            const cardId = card.id.split('-')[2];
+                            if (!existingIds.has(cardId)) {
+                                card.remove();
+                            }
+                        });
+
+                        notificationCountEl.textContent = snapshot.size;
+                        notificationCountEl.style.display = snapshot.size > 0 ? 'block' : 'none';
+
+                        if (snapshot.empty) {
+                           noAvailableText.style.display = "block";
+                        } else {
+                           noAvailableText.style.display = "none";
+                        }
+                    }, err => {
+                        console.error("Error listening to available deliveries:", err);
+                    });
+
+                // Real-time listener for accepted deliveries
+                db.collection("deliveries").where("driverId", "==", currentDriverId)
+                    .onSnapshot(snapshot => {
+                        const existingIds = new Set();
+                        snapshot.forEach(doc => {
+                           existingIds.add(doc.id);
+                           renderAcceptedCard(doc);
+                        });
+
+                        acceptedContainer.querySelectorAll('.delivery-card').forEach(card => {
+                            const cardId = card.id.split('-')[2];
+                            if (!existingIds.has(cardId)) {
+                                card.remove();
+                            }
+                        });
+
+                        if (snapshot.empty) {
+                            noAcceptedText.style.display = "block";
+                        } else {
+                            noAcceptedText.style.display = "none";
+                        }
+                    }, err => {
+                        console.error("Error listening to accepted deliveries:", err);
+                    });
+
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Main click handler for dynamic buttons
+        document.addEventListener("click", e => {
+            if (e.target.classList.contains("accept")) {
+                const bookingId = e.target.dataset.bookingId;
+                if (confirm("Are you sure you want to accept this delivery?")) {
+                    db.collection("deliveries").doc(bookingId).update({
+                        status: "Picked Up",
+                        driverId: currentDriverId
+                    }).then(() => {
+                        console.log("Delivery accepted!");
+                    }).catch(error => {
+                        console.error("Error accepting delivery:", error);
+                        alert("Failed to accept delivery. Please try again.");
+                    });
+                }
+            }
+            
+            if (e.target.classList.contains("action-btn") && e.target.dataset.newStatus) {
+                const bookingId = e.target.dataset.bookingId;
+                const newStatus = e.target.dataset.newStatus;
+                
+                if (confirm(`Change status to "${newStatus}"?`)) {
+                    db.collection("deliveries").doc(bookingId).update({
+                        status: newStatus
+                    }).then(() => {
+                        console.log("Status updated!");
+                    }).catch(error => {
+                        console.error("Error updating status:", error);
+                        alert("Failed to update status. Please try again.");
+                    });
+                }
+            }
+
+            if (e.target.classList.contains("chat-btn")) {
+                const bookingId = e.target.dataset.bookingId;
+                openChatModal(bookingId);
+            }
+        });
+        
+        closeModalBtn.onclick = function() {
+            closeChatModal();
+        }
+
+        window.onclick = function(event) {
+            if (event.target == chatModal) {
+                closeChatModal();
+            }
+        }
+        
+        sendBtn.onclick = sendMessage;
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

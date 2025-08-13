@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard - Fika Connect</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+    <style>
+        /* Global styles and variables for a modern, clean look */
+        :root {
+            --primary-color: #16a085;
+            --primary-dark: #12876f;
+            --primary-light: #e6f6f3;
+            --secondary-color: #3498db;
+            --accent-color: #047857;
+            --danger-color: #dc3545;
+            --dark-bg: #f4f7f6;
+            --light-bg: #ffffff;
+            --dark-text: #2c3e50;
+            --light-text: #7f8c8d;
+            --white: #ffffff;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-color: #e0e6e8;
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+            --header-height: 64px;
+            --sidebar-width: 250px;
+        }
+
+        body.dark-mode {
+            --primary-color: #48c9b0;
+            --primary-dark: #37a790;
+            --primary-light: #2a3c39;
+            --secondary-color: #5dade2;
+            --dark-bg: #121212;
+            --light-bg: #1e1e1e;
+            --dark-text: #e0e0e0;
+            --light-text: #a0a0a0;
+            --white: #2c3e50;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            --border-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .dashboard-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--light-bg);
+            padding: 20px;
+            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 999;
+        }
+        
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .main-content-wrapper {
+            flex-grow: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease-in-out;
+            padding: 20px;
+            padding-top: calc(var(--header-height) + 20px);
+        }
+        
+        body.sidebar-hidden .main-content-wrapper {
+            margin-left: 0;
+        }
+
+        /* Sidebar styles */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: var(--border-radius);
+            color: var(--dark-text);
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            box-shadow: 0 4px 8px rgba(22, 160, 133, 0.3);
+        }
+
+        .sidebar-nav a:hover:not(.active) {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        body.dark-mode .sidebar-nav a {
+            color: var(--light-text);
+        }
+
+        body.dark-mode .sidebar-nav a:hover:not(.active) {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--white);
+        }
+
+        /* Header styles */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            z-index: 1000;
+            background-color: var(--light-bg);
+            box-shadow: var(--card-shadow);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            transition: left 0.3s ease-in-out;
+        }
+        
+        body.sidebar-hidden .top-nav {
+            left: 0;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-left .menu-toggle {
+            display: none; /* Hidden on desktop, shown on mobile */
+        }
+
+        .nav-center {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            background-color: var(--dark-bg);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        body.dark-mode .search-bar input {
+            background-color: #333;
+            border: 1px solid #444;
+            color: var(--dark-text);
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.2);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-icon-btn, .nav-profile {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, transform 0.2s;
+            position: relative;
+        }
+
+        .nav-icon-btn i {
+            font-size: 1.3rem;
+            color: var(--light-text);
+        }
+
+        .nav-icon-btn:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .nav-icon-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .nav-icon-btn .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: var(--danger-color);
+            color: var(--white);
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.6em;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-profile {
+            width: auto;
+            border-radius: 30px;
+            padding: 5px;
+            gap: 10px;
+        }
+
+        .nav-profile:hover {
+            background-color: var(--primary-light);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--dark-text);
+        }
+
+        .profile-role {
+            font-size: 0.8rem;
+            color: var(--light-text);
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 200px;
+            background-color: var(--light-bg);
+            box-shadow: var(--card-shadow);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            margin-top: 10px;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: visibility 0.2s, opacity 0.2s, transform 0.2s;
+            z-index: 1001;
+        }
+        
+        .dropdown.active {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .dropdown-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        .dropdown-item.danger {
+            color: var(--danger-color);
+        }
+
+        /* Main content styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .card {
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .booking-card {
+            background-color: var(--dark-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .booking-card h3 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .booking-card p {
+            font-size: 0.95rem;
+            color: var(--dark-text);
+        }
+        
+        .booking-card .accept-btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 600;
+            align-self: flex-start;
+        }
+
+        .booking-card .accept-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        #driverMap {
+            height: 400px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.3s, opacity 0.3s;
+        }
+
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background-color: var(--light-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-content h3 {
+            color: var(--danger-color);
+            margin-bottom: 15px;
+        }
+        
+        .modal-content p {
+            margin-bottom: 20px;
+        }
+        
+        .modal-content button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-content button:hover {
+            background-color: var(--primary-dark);
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            }
+            
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .top-nav {
+                left: 0;
+            }
+
+            .nav-left .menu-toggle {
+                display: flex;
+            }
+            
+            .nav-center {
+                display: none; /* Hide search bar on smaller screens */
+            }
+            
+            .nav-profile .profile-info {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 0 15px;
+            }
+            .nav-right {
+                gap: 10px;
+            }
+            .nav-icon-btn, .nav-profile {
+                width: 36px;
+                height: 36px;
+            }
+            .nav-icon-btn i {
+                font-size: 1.1rem;
+            }
+            .nav-profile .profile-img {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+            .main-content-wrapper {
+                padding: 10px;
+                padding-top: calc(var(--header-height) + 10px);
+            }
+            .top-nav {
+                padding: 0 10px;
+            }
+            .nav-left {
+                gap: 10px;
+            }
+            .nav-profile {
+                padding: 3px;
+                gap: 5px;
+            }
+            .nav-profile .profile-img {
+                width: 32px;
+                height: 32px;
+            }
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Modal for alerts -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <button id="modalCloseBtn">OK</button>
+        </div>
+    </div>
+    
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-logo">
+                    <i class="fas fa-truck-moving"></i> FikaConnect
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="#"><i class="fas fa-box"></i> Deliveries</a>
+                <a href="#"><i class="fas fa-history"></i> History</a>
+                <a href="#"><i class="fas fa-truck-moving"></i> Vehicles</a>
+                <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                <a href="#"><i class="fas fa-headset"></i> Support</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper" id="mainContentWrapper">
+            <!-- Top Navigation Bar -->
+            <header class="top-nav" id="topNav">
+                <div class="nav-container">
+                    <div class="nav-left">
+                        <button class="nav-icon-btn menu-toggle" id="menuToggle">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Search bookings, deliveries...">
+                        </div>
+                    </div>
+                    
+                    <div class="nav-right">
+                        <button class="nav-icon-btn theme-toggle" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        
+                        <div class="nav-icon-btn notification-bell" id="notificationBell">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="notificationCount">3</span>
+                        </div>
+                        
+                        <div class="nav-profile" id="navProfile">
+                            <div class="profile-info">
+                                <span class="profile-name" id="userNameDisplay"></span>
+                                <span class="profile-role">Driver</span>
+                            </div>
+                            <img src="https://via.placeholder.com/40" alt="Profile" class="profile-img">
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                            
+                            <!-- Profile Dropdown -->
+                            <div class="dropdown" id="profileDropdown">
+                                <div class="dropdown-item" id="profileSettingsBtn">
+                                    <i class="fas fa-user-cog"></i>
+                                    <span>Profile Settings</span>
+                                </div>
+                                <div class="dropdown-item" id="logoutBtn">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="container">
+                <!-- Dashboard Body -->
+                <div class="card">
+                    <h2>Driver Performance</h2>
+                    <p id="performanceSummary"></p>
+                </div>
+                
+                <div class="card" style="margin-top: 20px;">
+                    <h2>Active Bookings</h2>
+                    <div id="bookingsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, setDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        let firebaseApp, auth, db;
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Custom Modal for alerts instead of window.alert()
+        const alertModal = document.getElementById('alertModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        
+        function showModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            alertModal.classList.add('active');
+        }
+        
+        modalCloseBtn.addEventListener('click', () => {
+            alertModal.classList.remove('active');
+        });
+
+        // Initialize Firebase
+        if (Object.keys(firebaseConfig).length > 0) {
+            firebaseApp = initializeApp(firebaseConfig);
+            auth = getAuth(firebaseApp);
+            db = getFirestore(firebaseApp);
+        } else {
+            console.error("Firebase config is missing.");
+        }
+
+        let driverId;
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    if (userDocSnap.exists() && userDocSnap.data().role === 'driver') {
+                        const userData = userDocSnap.data();
+                        driverId = user.uid; // Store driver ID
+                        
+                        // Update UI with driver info
+                        const userNameDisplay = document.getElementById('userNameDisplay');
+                        const firstName = userData.firstName || 'Driver';
+                        if (userNameDisplay) {
+                            userNameDisplay.textContent = firstName;
+                        }
+
+                        // Fetch and display data
+                        // initDriverMap(); // Uncomment once map is added back
+                        fetchAndDisplayBookings();
+                        fetchDriverPerformance();
+                        
+                    } else {
+                        showModal("Access Denied", "You are not authorized to view this page.");
+                        await signOut(auth);
+                        // Removed window.location.href redirect as it was causing an error
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                    showModal("Error", "Error loading user data. Please try again.");
+                }
+            } else {
+                showModal("Authentication Required", "Please log in to view this page.");
+                // Removed window.location.href redirect as it was causing an error
+            }
+        });
+
+        // --- New Sidebar and Navigation Functionality ---
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContentWrapper = document.getElementById('mainContentWrapper');
+        const navProfile = document.getElementById('navProfile');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mainContentWrapper.classList.toggle('sidebar-hidden');
+            document.body.classList.toggle('sidebar-hidden');
+        });
+        
+        navProfile.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent document click from closing it immediately
+            profileDropdown.classList.toggle('active');
+            navProfile.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navProfile.contains(e.target)) {
+                profileDropdown.classList.remove('active');
+                navProfile.classList.remove('active');
+            }
+        });
+
+        // Toggle Dark Mode
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+        
+        // Logout
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await signOut(auth);
+                // Removed window.location.href redirect
+            });
+        }
+
+        // --- End of New Functionality ---
+
+        // Function to fetch and display available bookings
+        async function fetchAndDisplayBookings() {
+            if (!db) return;
+            const bookingsList = document.getElementById('bookingsList');
+            bookingsList.innerHTML = '<p>Loading available bookings...</p>';
+            
+            try {
+                const q = query(collection(db, "bookings"), where("status", "==", "available"));
+                const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                    const bookings = [];
+                    querySnapshot.forEach((doc) => {
+                        bookings.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    bookingsList.innerHTML = '';
+                    if (bookings.length === 0) {
+                        bookingsList.innerHTML = '<p>No new bookings available.</p>';
+                    } else {
+                        bookings.forEach(booking => {
+                            const bookingCard = document.createElement('div');
+                            bookingCard.className = 'booking-card';
+                            bookingCard.innerHTML = `
+                                <h3>Booking ID: ${booking.id}</h3>
+                                <p><strong>From:</strong> ${booking.origin}</p>
+                                <p><strong>To:</strong> ${booking.destination}</p>
+                                <p><strong>Distance:</strong> ${booking.distance} km</p>
+                                <p><strong>Fare:</strong> $${booking.fare}</p>
+                                <button class="accept-btn" data-booking-id="${booking.id}">Accept</button>
+                            `;
+                            bookingsList.appendChild(bookingCard);
+                        });
+                        
+                        document.querySelectorAll('.accept-btn').forEach(button => {
+                            button.addEventListener('click', handleAcceptBooking);
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error("Error fetching bookings:", error);
+                bookingsList.innerHTML = '<p>Error loading bookings.</p>';
+            }
+        }
+        
+        // Function to handle accepting a booking
+        async function handleAcceptBooking(event) {
+            const bookingId = event.target.dataset.bookingId;
+            if (!bookingId || !driverId) return;
+            
+            try {
+                const bookingDocRef = doc(db, "bookings", bookingId);
+                await setDoc(bookingDocRef, {
+                    status: 'accepted',
+                    driverId: driverId,
+                    acceptedAt: new Date()
+                }, { merge: true });
+                showModal("Success", `Booking ${bookingId} has been accepted!`);
+            } catch (error) {
+                console.error("Error accepting booking:", error);
+                showModal("Error", "Could not accept booking. Please try again.");
+            }
+        }
+        
+        // Function to fetch and display driver performance
+        async function fetchDriverPerformance() {
+            // Placeholder function - a real implementation would query Firestore for performance metrics
+            const performanceSummary = document.getElementById('performanceSummary');
+            performanceSummary.textContent = "Your performance summary for the month is excellent! You've completed 25 deliveries with an average rating of 4.8 stars.";
+        }
+        
+    </script>
+</body>
+</html>

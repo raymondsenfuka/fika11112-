@@ -1,0 +1,981 @@
+/* --- General Dashboard Styles (might be reused from driver-dashboard.html, ensure consistency) --- */
+:root {
+    /* Ensure these variables are defined in your styles.css */
+    --primary-color: #00b894;
+    --secondary-color: #55efc4;
+    --dark-green: #0A7E5A;
+    --text-color: #333;
+    --light-gray-bg: #f8f9fa;
+    --white: #fff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    --border-radius: 10px;
+    --input-border: #ccc;
+    --error-red: #dc3545;
+    --success-green: #28a745;
+
+    /* Specific status colors (can be added here or in main styles) */
+    --pending-orange: #e65100;
+    --assigned-blue: #1976d2;
+    --on-the-way-purple: #673ab7; /* New general 'on the way' color */
+    --delivered-green: #28a745;
+    --cancelled-red: #dc3545;
+    --arrived-yellow: #ffc107;
+}
+
+/* Ensure page-header and page-footer are defined globally */
+/* Example (if not already present): */
+/*
+.page-header {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 15px 0;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.page-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.page-header h1 { margin: 0; font-size: 1.8rem; color: var(--white); }
+.page-header h1 a { color: var(--white); text-decoration: none; }
+.page-header nav a { color: var(--white); text-decoration: none; margin-left: 20px; font-weight: 600; }
+.page-header nav a:hover, .page-header h1 a:hover { color: var(--secondary-color); }
+
+.page-footer {
+    background-color: #222;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-top: auto;
+}
+.page-footer p { margin: 0; color: #ccc; }
+*/
+
+/* --- Sender Dashboard Specific Styles --- 
+.dashboard-main {
+    padding-top: 30px;
+    padding-bottom: 50px;
+}
+*/
+.page-title-section {
+    text-align: center;
+    margin-bottom: 40px;
+    background-color: var(--white);
+    padding: 30px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.page-title-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+/*.page-title-section h2 .fas {
+    color: var(--dark-green);
+}
+
+.section-description {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+}
+
+.dashboard-actions {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.dashboard-actions .primary-btn {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+}
+.dashboard-actions .primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+
+.dashboard-summary-cards {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.summary-card {
+    background-color: var(--light-gray-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    flex: 1;
+    min-width: 180px;
+    max-width: 280px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.summary-card h3 {
+    font-size: 1.2rem;
+    color: var(--dark-green);
+    margin-bottom: 10px;
+}
+
+.summary-card .count {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+.dashboard-section {
+    background-color: var(--white);
+    padding: 30px 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+.dashboard-section h3 {
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid var(--light-gray-bg);
+    padding-bottom: 15px;
+}
+.dashboard-section h3 .fas {
+    color: var(--dark-green);
+}
+
+.delivery-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.no-items-message, .error-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+    grid-column: 1 / -1; /* Span all columns 
+}*/
+/*.error-message {
+    color: var(--error-red);
+    font-weight: 600;
+}
+
+.delivery-card {
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+.delivery-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header h4 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--white);
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--white);
+}
+/* Re-define/ensure these specific colors are in your main CSS */
+.status-pending { background-color: var(--pending-orange); }
+.status-assigned { background-color: var(--assigned-blue); }
+.status-on-the-way { background-color: var(--on-the-way-purple); } /* General active status */
+.status-delivered { background-color: var(--delivered-green); }
+.status-cancelled { background-color: var(--cancelled-red); }
+.status-arrived-pickup, .status-arrived-dropoff { background-color: var(--arrived-yellow); color: var(--text-color); }
+
+
+.card-body {
+    padding: 20px;
+    flex-grow: 1;
+}
+.card-body p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-body p strong {
+    color: var(--dark-green);
+}
+.card-body p i {
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+}
+
+.card-actions {
+    padding: 15px 20px;
+    background-color: var(--light-gray-bg);
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+/*.action-btn {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    justify-content: center;
+}
+
+.track-btn {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+}
+.track-btn:hover {
+    background-color: var(--dark-green);
+    transform: translateY(-1px);
+}
+
+.cancel-btn {
+    background-color: var(--error-red);
+    color: var(--white);
+    border: none;
+}
+.cancel-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+.view-summary-btn {
+    background-color: var(--secondary-color);
+    color: var(--dark-gray);
+    border: 1px solid var(--secondary-color);
+}
+.view-summary-btn:hover {
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+    transform: translateY(-1px);
+}
+
+.cancelled-message {
+    color: var(--error-red);
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cancelled-message i {
+    color: var(--error-red);
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-title-section {
+        padding: 20px 15px;
+    }
+    .page-title-section h2 {
+        font-size: 1.8rem;
+    }
+    .section-description {
+        font-size: 1rem;
+    }
+    .dashboard-summary-cards {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .summary-card {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    .dashboard-actions .primary-btn {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 1rem;
+    }
+    .dashboard-section {
+        padding: 20px 15px;
+    }
+    .dashboard-section h3 {
+        font-size: 1.6rem;
+    }
+    .delivery-list {
+        grid-template-columns: 1fr;
+    }
+    .delivery-card {
+        margin-bottom: 15px;
+    }
+    .card-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .action-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--light-gray-bg);
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex; /* Use flexbox for sticky footer effect */
+    flex-direction: column;
+    min-height: 100vh; /* Ensure body takes full viewport height */
+}
+h1, h2, h3, h4 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-green);
+    font-weight: 700;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- Page Header (consistent with booking page) ---*/ 
+/*.page-header {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 15px 0;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0; /* Don't allow header to shrink 
+
+.page-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--white);
+}
+/*.page-header h1 a {
+    color: var(--white);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+/*.page-header h1 a:hover {
+    color: var(--secondary-color);
+}
+
+/*.page-header nav a {
+    color: var(--white);
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+/*.page-header nav a:hover {
+    color: var(--secondary-color);
+}
+
+
+--- Main Tracking Layout --- */
+/*main.tracking-page-main {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; Allow main content to grow and push footer down 
+    padding: 20px 0;
+}
+*/
+#map {
+    height: 700px; /* Increased height for better map view */
+    width: 100%;
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+    background-color: #e0e0e0; /* Placeholder background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1.2rem;
+    font-style: italic;
+    flex-shrink: 0; /* Keep map from shrinking too much on smaller screens */
+}
+
+.tracking-panels {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 25px;
+    margin-top: 25px;
+}
+
+/* --- Manual Panel (Initial Input) --- 
+.manual-panel {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    display: flex; /* Initially flex to center items */
+   /* flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 500px;
+    margin: 40px auto; /* Center in main content area */
+    /*text-align: center;
+}
+
+.manual-panel h2 {
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.manual-panel h2 .fas {
+    color: var(--dark-green);
+}
+
+.manual-panel p {
+    color: #555;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.manual-panel input,
+.manual-panel select {
+    width: calc(100% - 40px); /* Account for padding */
+   /* padding: 12px 15px;
+    border: 1px solid var(--input-border);
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}*/
+.manual-panel input:focus,
+.manual-panel select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.2);
+    outline: none;
+}
+
+
+/* --- Info Panel (Delivery Details) --- */
+.info-panel {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    flex: 1; /* Allow panel to grow */
+    min-width: 300px; /* Minimum width for stacking */
+}
+
+.info-panel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.6rem;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-panel p {
+    margin: 0.6rem 0;
+    font-size: 1rem;
+    color: #444;
+}
+.info-panel p strong {
+    color: var(--dark-green);
+    font-weight: 700;
+}
+
+/*.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-left: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}*/
+.status-pending { background-color: #ffe0b2; color: #e65100; } /* Orange */
+.status-assigned { background-color: #c8e6c9; color: #388e3c; } /* Light Green */
+.status-on-the-way { background-color: #bbdefb; color: #1976d2; } /* Blue */
+.status-delivered { background-color: #dcedc8; color: var(--success-green); } /* Dark Green */
+.status-cancelled { background-color: #ffcdd2; color: var(--error-red); } /* Red */
+
+
+/* --- Driver Actions Section --- */
+.driver-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+.driver-actions h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.driver-actions input[type="file"] {
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+}
+
+.driver-actions button {
+    width: auto; /* Allow buttons to size to content */
+    margin: 0.5rem 0.5rem 0.5rem 0;
+    padding: 10px 20px;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.driver-actions button:hover {
+    transform: none; /* No translateY for these buttons */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#markDeliveredBtn {
+    background: var(--success-green);
+}
+#markDeliveredBtn:hover {
+    background: #218838;
+}
+
+#uploadProofBtn {
+    background: #007bff; /* Blue for upload */
+}
+#uploadProofBtn:hover {
+    background: #0056b3;
+}
+
+
+/* --- Proof of Delivery Section --- */
+.proof-of-delivery {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+.proof-of-delivery h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+.proof-of-delivery img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-top: 15px;
+}
+.proof-of-delivery p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-top: 10px;
+}
+
+.info-message {
+    font-style: italic;
+    color: #777;
+    text-align: center;
+    margin: 20px 0;
+}
+
+
+/* --- Page Footer (consistent with other pages) --- */
+.page-footer {
+    background-color: #222;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-top: auto; /* Push footer to bottom */
+}
+.page-footer p {
+    margin: 0;
+    color: #ccc;
+}
+
+
+/* 
+
+/* Dashboard Sections
+.dashboard-section {
+    background-color: var(--white);
+    padding: 30px 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+}
+.dashboard-section h3 {
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dashboard-section h3 .fas {
+    color: var(--dark-green);
+}
+
+/* Delivery List */
+.delivery-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.no-items-message {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 20px;
+    grid-column: 1 / -1; /* Span all columns */
+}
+
+/* Delivery Card */
+.delivery-card {
+    border: 1px solid #eee;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+.delivery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--white);
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 20px;
+    flex-grow: 1; /* Allow body to grow */
+}
+.card-body p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    color: #444;
+}
+.card-body p strong {
+    color: var(--dark-green);
+}
+.card-body p .fas {
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+.card-actions {
+    padding: 15px 20px;
+    background-color: var(--light-gray-bg);
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap */
+    gap: 10px;
+    justify-content: center;
+}
+
+
+
+/* --- Authentication Pages (login.html, signup.html) --- */
+.auth-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--light-gray-bg);
+}
+
+.auth-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+}
+
+.auth-box {
+    background-color: var(--white);
+    padding: 40px 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 450px;
+    width: 100%;
+    text-align: center;
+}
+
+.auth-box h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.auth-tagline {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.05rem;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group input[type="text"],
+.input-group input[type="tel"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.input-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.2);
+    outline: none;
+}
+
+.input-group small {
+    display: block;
+    margin-top: 5px;
+    color: #777;
+    font-size: 0.85rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2); /* Make checkbox slightly larger */
+}
+.checkbox-group label {
+    margin-bottom: 0;
+    font-weight: normal;
+}
+
+
+.auth-btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    border-radius: 8px;
+    margin-top: 15px;
+    box-shadow: var(--shadow);
+}
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hover-shadow);
+}
+
+.auth-message {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    display: none; /* Hidden by default, shown by JS */
+}
+
+.auth-message.error-message {
+    background-color: #fcebeb; /* Light red */
+    color: var(--error-red);
+    border: 1px solid var(--error-red);
+    display: block;
+}
+
+.auth-message.success-message {
+    background-color: #e6ffed; /* Light green */
+    color: var(--success-green);
+    border: 1px solid var(--success-green);
+    display: block;
+}
+
+.auth-message.info-message {
+    background-color: #e0f2f7; /* Light blue */
+    color: #007bff;
+    border: 1px solid #007bff;
+    display: block;
+}
+
+
+.auth-footer-text {
+    margin-top: 25px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.auth-footer-text a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+.auth-footer-text a:hover {
+    color: var(--dark-green);
+    text-decoration: underline;
+}
+
+/* Responsive adjustments for auth pages */
+@media (max-width: 600px) {
+    .auth-box {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    .auth-box h2 {
+        font-size: 1.8rem;
+    }
+    .auth-tagline {
+        font-size: 0.95rem;
+    }
+    .auth-btn {
+        font-size: 1.05rem;
+    }
+}
+
+
+
+
+   .page-footer {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 0.9em;
+    }
+
+    @media (min-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+
+
+    /*#map {
+      height: 400px;
+      width: 100%;
+    }
+    #deliveryPanel {
+      display: none;
+      background: #fff;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+   /* button {
+      padding: 10px 20px;
+      margin: 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }

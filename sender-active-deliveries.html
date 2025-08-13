@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Active Deliveries | FikaConnect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-dark: #121212;
+            --text-light: #fff;
+            --text-dark: #222;
+            --primary: #28a745;
+            --primary-dark: #1e7e34;
+            --secondary: #6c757d;
+            --card-light: #ffffff;
+            --card-dark: #1e1e1e;
+            --status-pending: #ffc107;
+            --status-picked-up: #17a2b8;
+            --status-in-transit: #007bff;
+            --status-delivered: #28a745;
+            --status-cancelled: #dc3545;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+            transition: var(--transition);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        /* Top Bar & Header */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--card-light);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .dark-mode .top-bar {
+            background: var(--card-dark);
+        }
+
+        .menu-toggle {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            transition: var(--transition);
+            z-index: 1001;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.6rem;
+        }
+
+        .user-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .language-selector {
+            position: relative;
+        }
+
+        .language-selector select {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            transition: var(--transition);
+            min-width: 120px;
+        }
+
+        .language-selector select:hover {
+            background: rgba(40, 167, 69, 0.2);
+        }
+
+        .dark-mode .language-selector select {
+            background: rgba(40, 167, 69, 0.2);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            border-radius: 30px;
+            background: rgba(40, 167, 69, 0.1);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            background: rgba(40, 167, 69, 0.2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 70px;
+            height: 100vh;
+            background-color: var(--card-light);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: width 0.3s ease;
+            z-index: 990;
+            overflow-x: hidden;
+        }
+
+        .dark-mode .sidebar {
+            background-color: var(--card-dark);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar:hover {
+            width: var(--sidebar-width);
+        }
+
+        .sidebar-header {
+            display: none;
+        }
+
+        .sidebar:hover .sidebar-header {
+            display: block;
+            padding: 20px 20px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .sidebar:hover .sidebar-header h2 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.4rem;
+        }
+
+        .sidebar:hover .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            padding-top: 80px;
+            /* Space for the top bar */
+        }
+
+        .sidebar:hover .sidebar-nav ul {
+            padding-top: 0;
+        }
+
+        .sidebar-nav a {
+            text-decoration: none;
+            color: inherit;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 0;
+            transition: var(--transition);
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .sidebar:hover .sidebar-nav a {
+            justify-content: flex-start;
+            padding: 12px 20px;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--primary);
+        }
+
+        .sidebar-nav a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar-nav a i {
+            min-width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-nav a span {
+            display: none;
+        }
+
+        .sidebar:hover .sidebar-nav a span {
+            display: inline;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .sidebar:hover .sidebar-footer {
+            display: block;
+        }
+
+        .dark-mode .sidebar-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #dc3545;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 70px;
+            padding-top: calc(var(--header-height) + 20px);
+            padding-bottom: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        .sidebar:hover+.main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Page specific styles */
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .page-header h2 i {
+            color: var(--primary);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .controls .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .controls label {
+            font-weight: 500;
+        }
+        .controls select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: var(--card-light);
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        .dark-mode .controls select {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .delivery-cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .delivery-card {
+            background-color: var(--card-light);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s;
+        }
+        .dark-mode .delivery-card {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .delivery-card:hover {
+            transform: translateY(-5px);
+        }
+        .delivery-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .delivery-card-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+        .delivery-card-header .status {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+        }
+        .status-Pending-Driver-Assignment { background-color: var(--status-pending); color: black; }
+        .status-Picked-Up { background-color: var(--status-picked-up); }
+        .status-In-Transit { background-color: var(--status-in-transit); }
+        .status-Delivered { background-color: var(--status-delivered); }
+        .status-Cancelled { background-color: var(--status-cancelled); }
+        .delivery-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .detail-item {
+            margin-bottom: 10px;
+        }
+        .detail-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-bottom: 3px;
+        }
+        .dark-mode .detail-item strong {
+            color: #aaa;
+        }
+        .detail-item span {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        .dark-mode .detail-item span {
+            color: var(--text-light);
+        }
+
+        .delivery-details hr {
+            border: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin: 10px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .cancel-booking-btn, .track-btn {
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .cancel-booking-btn {
+            background-color: var(--status-cancelled);
+        }
+        .cancel-booking-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+        .track-btn {
+            background-color: var(--status-picked-up);
+        }
+        .track-btn:hover {
+            background-color: #138496;
+            transform: translateY(-2px);
+        }
+        .disabled-btn {
+            background-color: var(--secondary) !important;
+            cursor: not-allowed !important;
+            opacity: 0.7;
+        }
+
+        .no-deliveries-message {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2rem;
+            color: var(--secondary);
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 25px 0;
+            font-size: 0.95rem;
+            color: var(--secondary);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: auto;
+        }
+
+        .dark-mode .page-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #aaa;
+        }
+
+        /* Overlay for mobile */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 800;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Responsive Improvements */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: var(--sidebar-width);
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                top: 0;
+                height: 100%;
+                box-shadow: var(--shadow);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar:hover {
+                width: var(--sidebar-width);
+                /* Override hover for mobile */
+            }
+
+            .sidebar-nav ul {
+                padding-top: 80px;
+                /* Adjust padding for mobile sidebar */
+            }
+
+            .sidebar-header {
+                display: block;
+                padding: 20px;
+            }
+
+            .sidebar-nav a {
+                justify-content: flex-start;
+                padding: 12px 20px;
+            }
+
+            .sidebar-nav a span {
+                display: inline;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-left: 15px;
+                padding-right: 15px;
+                padding-top: calc(var(--header-height) + 15px);
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls .control-group {
+                justify-content: space-between;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .menu-toggle {
+                display: none;
+            }
+
+            .overlay {
+                display: none !important;
+            }
+
+            .sidebar-nav ul {
+                padding-top: 80px;
+                /* Space for top bar */
+            }
+
+            .sidebar:hover .sidebar-nav ul {
+                padding-top: 0;
+            }
+
+            .sidebar-footer {
+                display: block;
+            }
+
+            .sidebar:not(:hover) .sidebar-footer {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .user-profile {
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a href="index.html" class="logo">
+            <i class="fas fa-shipping-fast"></i> FikaConnect
+        </a>
+        <div class="user-actions">
+            <div class="language-selector">
+                <select id="languageSelector">
+                    <option value="en">English</option>
+                    <option value="lg">Luganda</option>
+                    <option value="sw">Kiswahili</option>
+                    <option value="fr">French</option>
+                </select>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">S</div>
+                <span class="user-name" id="userNameDisplay">Sender</span>
+            </div>
+        </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>FikaConnect</h2>
+            <p data-translate="sidebarDashboardTitle">Sender Dashboard</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> <span data-translate="navDashboard">Dashboard</span></a></li>
+                <li><a href="book-new-delivery.html"><i class="fas fa-plus-circle"></i> <span data-translate="navBookNew">Book New</span></a></li>
+                <li><a href="sender profile.html"><i class="fas fa-user-circle"></i> <span data-translate="navProfile">My Profile</span></a></li>
+                <li><a href="sender-active-deliveries.html" class="active"><i class="fas fa-history"></i> <span data-translate="navBookings">My Bookings</span></a></li>
+                <li><a href="sender-settings.html"><i class="fas fa-cog"></i> <span data-translate="navSettings">Settings</span></a></li>
+                <li><a href="contact-us.html"><i class="fas fa-headset"></i> <span data-translate="navContact">Contact Us</span></a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> <span data-translate="navAbout">About Us</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span></a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2><i class="fas fa-history"></i> My Bookings</h2>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="sort-by">Sort By:</label>
+                <select id="sort-by">
+                    <option value="createdAt_desc">Date (Newest First)</option>
+                    <option value="createdAt_asc">Date (Oldest First)</option>
+                    <option value="status">Status</option>
+                    <option value="fareDetails.totalFare_desc">Fare (High to Low)</option>
+                    <option value="fareDetails.totalFare_asc">Fare (Low to High)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="filter-by-status">Filter by Status:</label>
+                <select id="filter-by-status">
+                    <option value="">All</option>
+                    <option value="Pending Driver Assignment">Pending Driver Assignment</option>
+                    <option value="Picked Up">Picked Up</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="delivery-cards-container" id="delivery-cards-container">
+            <p id="loading-message" style="text-align: center; font-size: 1.2rem; color: #6c757d;">Loading bookings...</p>
+            <p id="no-deliveries-message" class="no-deliveries-message" style="display: none;">You have no bookings.</p>
+        </div>
+
+        <footer class="page-footer">
+            <p>&copy; 2025 FikaConnect — Smart Logistics for East Africa</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Firebase configuration from book-new-delivery.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "492360448361",
+            appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // UI Element References
+        const deliveryCardsContainer = document.getElementById("delivery-cards-container");
+        const loadingMessage = document.getElementById("loading-message");
+        const noDeliveriesMessage = document.getElementById("no-deliveries-message");
+        const logoutBtnSidebar = document.getElementById("logoutBtnSidebar");
+        const sortBySelect = document.getElementById("sort-by");
+        const filterByStatusSelect = document.getElementById("filter-by-status");
+        const userAvatar = document.getElementById('userAvatar');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const themeToggle = document.getElementById('themeToggle');
+
+        let CURRENT_SENDER_ID = null;
+
+        // UI Event Listeners
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+
+        // Log out functionality
+        logoutBtnSidebar.addEventListener("click", (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Error signing out: ", error);
+                alert("Failed to log out. Please try again.");
+            });
+        });
+
+        function renderDeliveryCard(doc) {
+            const data = doc.data();
+            const cardId = `delivery-card-${doc.id}`;
+            let card = document.getElementById(cardId);
+
+            if (!card) {
+                card = document.createElement("div");
+                card.id = cardId;
+                card.className = "delivery-card";
+                deliveryCardsContainer.appendChild(card);
+            }
+
+            const pickupInfo = data.deliveryType === 'direct' ? data.pickup.address : data.pickup.name;
+            const dropoffInfo = data.deliveryType === 'direct' ? data.dropoff.address : data.dropoff.name;
+            const recipientName = data.recipient.name || 'N/A';
+            const recipientPhone = data.recipient.phone || 'N/A';
+            const packageDescription = data.package.description || 'N/A';
+            const packageWeight = data.package.weight ? `${data.package.weight} kg` : 'N/A';
+            const totalFare = data.fareDetails ? data.fareDetails.totalFare.toLocaleString() : 'N/A';
+            const bookingDate = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'N/A';
+            
+            const statusClass = `status-${data.status.replace(/\s+/g, '-')}`;
+
+            card.innerHTML = `
+                <div class="delivery-card-header">
+                    <h3>Booking ID: ${doc.id}</h3>
+                    <div class="status ${statusClass}">${data.status}</div>
+                </div>
+                <div class="delivery-details">
+                    <div class="detail-item">
+                        <strong>Booking Date:</strong>
+                        <span>${bookingDate}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Recipient:</strong>
+                        <span>${recipientName}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Recipient Phone:</strong>
+                        <span>${recipientPhone}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Pickup Location:</strong>
+                        <span>${pickupInfo}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Drop-off Location:</strong>
+                        <span>${dropoffInfo}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Package Description:</strong>
+                        <span>${packageDescription}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Package Weight:</strong>
+                        <span>${packageWeight}</span>
+                    </div>
+                    <div class="detail-item">
+                        <strong>Total Fare:</strong>
+                        <span>UGX ${totalFare}</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="cancel-booking-btn" data-booking-id="${doc.id}">Cancel Booking</button>
+                    <button class="track-btn" data-booking-id="${doc.id}">Track</button>
+                </div>
+            `;
+
+            const cancelButton = card.querySelector('.cancel-booking-btn');
+            if (data.status !== "Pending Driver Assignment") {
+                cancelButton.disabled = true;
+                cancelButton.classList.add('disabled-btn');
+            } else {
+                cancelButton.disabled = false;
+                cancelButton.classList.remove('disabled-btn');
+            }
+        }
+
+        function fetchDeliveries(userUid, sortByValue, filterByStatusValue) {
+            loadingMessage.style.display = "block";
+            noDeliveriesMessage.style.display = "none";
+            deliveryCardsContainer.innerHTML = '';
+
+            const deliveriesCollection = collection(db, "deliveries");
+            
+            let queryConstraints = [where("senderId", "==", userUid)];
+
+            if (filterByStatusValue) {
+                queryConstraints.push(where("status", "==", filterByStatusValue));
+            }
+
+            if (sortByValue) {
+                const [field, direction] = sortByValue.split('_');
+                queryConstraints.push(orderBy(field, direction || 'asc'));
+            } else {
+                queryConstraints.push(orderBy("createdAt", "desc"));
+            }
+            
+            const q = query(deliveriesCollection, ...queryConstraints);
+
+            onSnapshot(q, snapshot => {
+                loadingMessage.style.display = "none";
+                const existingIds = new Set();
+                snapshot.forEach(doc => {
+                    existingIds.add(doc.id);
+                    renderDeliveryCard(doc);
+                });
+                
+                deliveryCardsContainer.querySelectorAll('.delivery-card').forEach(card => {
+                    const cardId = card.id.split('-')[2];
+                    if (!existingIds.has(cardId)) {
+                        card.remove();
+                    }
+                });
+
+                if (snapshot.empty) {
+                   noDeliveriesMessage.style.display = "block";
+                } else {
+                   noDeliveriesMessage.style.display = "none";
+                }
+            }, err => {
+                console.error("Error listening for changes:", err);
+                loadingMessage.style.display = "none";
+                noDeliveriesMessage.style.display = "block";
+                noDeliveriesMessage.textContent = "Error loading bookings. Please try again.";
+            });
+        }
+
+        // Listen for changes in sorting and filtering controls
+        sortBySelect.addEventListener('change', () => {
+            const user = auth.currentUser;
+            if (user) {
+                fetchDeliveries(user.uid, sortBySelect.value, filterByStatusSelect.value);
+            }
+        });
+
+        filterByStatusSelect.addEventListener('change', () => {
+            const user = auth.currentUser;
+            if (user) {
+                fetchDeliveries(user.uid, sortBySelect.value, filterByStatusSelect.value);
+            }
+        });
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                CURRENT_SENDER_ID = user.uid;
+                userNameDisplay.textContent = user.displayName || 'Sender';
+                userAvatar.textContent = (user.displayName || 'Sender').charAt(0).toUpperCase();
+
+                fetchDeliveries(CURRENT_SENDER_ID, sortBySelect.value, filterByStatusSelect.value);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Event listener for cancel and track buttons using event delegation
+        document.addEventListener("click", async e => {
+            const bookingId = e.target.dataset.bookingId;
+
+            if (e.target.classList.contains("cancel-booking-btn")) {
+                if (confirm("Are you sure you want to cancel this booking?")) {
+                    try {
+                        const bookingRef = doc(db, "deliveries", bookingId);
+                        await updateDoc(bookingRef, {
+                            status: "Cancelled"
+                        });
+                        console.log("Booking successfully cancelled!");
+                    } catch(error) {
+                        console.error("Error cancelling booking:", error);
+                        alert("Failed to cancel booking. Please try again.");
+                    }
+                }
+            }
+
+            if (e.target.classList.contains("track-btn")) {
+                // Redirect to the trackdeliveries.html page with the booking ID as a URL parameter
+                window.location.href = `trackdeliveries.html?bookingId=${bookingId}`;
+            }
+        });
+    </script>
+</body>
+</html>

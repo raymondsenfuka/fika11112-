@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Book New Delivery | FikaConnect</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfBIzOSYwTT5wD8wYpANJkKpmc7HFjtw=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20n6n+A42+j3fIq/eE/2I+RjQYI4+kI1x7Z7lC6B61z=" crossorigin=""></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+</head>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-dark: #121212;
+            --text-light: #fff;
+            --text-dark: #222;
+            --primary: #28a745;
+            --primary-dark: #1e7e34;
+            --secondary: #6c757d;
+            --card-light: #ffffff;
+            --card-dark: #1e1e1e;
+            --status-pending: #ffc107;
+            --status-picked-up: #17a2b8;
+            --status-in-transit: #007bff;
+            --status-delivered: #28a745;
+            --status-cancelled: #dc3545;
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --transition: all 0.3s ease;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+            --bg-light: #f8f9fa;
+            --bg-dark: #121212;
+            --text-light: #fff;
+            --text-dark: #222;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+            transition: var(--transition);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        /* Top Bar & Header */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--card-light);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .dark-mode .top-bar {
+            background: var(--card-dark);
+        }
+
+        .menu-toggle {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            transition: var(--transition);
+            z-index: 1001;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+         #map {
+            height: 400px; /* A fixed height is often more reliable */
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.6rem;
+        }
+
+        .user-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .language-selector {
+            position: relative;
+        }
+
+        .language-selector select {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            transition: var(--transition);
+            min-width: 120px;
+        }
+
+        .language-selector select:hover {
+            background: rgba(40, 167, 69, 0.2);
+        }
+
+        .dark-mode .language-selector select {
+            background: rgba(40, 167, 69, 0.2);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            border-radius: 30px;
+            background: rgba(40, 167, 69, 0.1);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .user-profile:hover {
+            background: rgba(40, 167, 69, 0.2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 70px;
+            height: 100vh;
+            background-color: var(--card-light);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: width 0.3s ease;
+            z-index: 990;
+            overflow-x: hidden;
+        }
+
+        .dark-mode .sidebar {
+            background-color: var(--card-dark);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar:hover {
+            width: var(--sidebar-width);
+        }
+
+        .sidebar-header {
+            display: none;
+        }
+
+        .sidebar:hover .sidebar-header {
+            display: block;
+            padding: 20px 20px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .sidebar:hover .sidebar-header h2 {
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.4rem;
+        }
+
+        .sidebar:hover .sidebar-header p {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            padding-top: 80px; /* Space for the top bar */
+        }
+
+        .sidebar:hover .sidebar-nav ul {
+            padding-top: 0;
+        }
+
+        .sidebar-nav a {
+            text-decoration: none;
+            color: inherit;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 0;
+            transition: var(--transition);
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .sidebar:hover .sidebar-nav a {
+            justify-content: flex-start;
+            padding: 12px 20px;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--primary);
+        }
+
+        .sidebar-nav a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar-nav a i {
+            min-width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-nav a span {
+            display: none;
+        }
+
+        .sidebar:hover .sidebar-nav a span {
+            display: inline;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .sidebar:hover .sidebar-footer {
+            display: block;
+        }
+
+        .dark-mode .sidebar-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #dc3545;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 70px;
+            padding-top: calc(var(--header-height) + 20px);
+            padding-bottom: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+            transition: margin-left 0.3s;
+        }
+
+        .sidebar:hover + .main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Page specific styles */
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .page-header h2 i {
+            color: var(--primary);
+        }
+
+        /* Form Styling */
+        .booking-form-container {
+            background-color: var(--card-light);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .dark-mode .booking-form-container {
+            background-color: var(--card-dark);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .booking-form h3 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            background-color: var(--bg-light);
+        }
+
+        .dark-mode .form-section {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: var(--bg-dark);
+        }
+
+        .form-section h4 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode .form-section h4 {
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .dark-mode .form-group label {
+            color: var(--text-light);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="tel"],
+        .form-group textarea,
+        .form-group select {
+            width: calc(100% - 24px); /* Account for padding */
+            padding: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            transition: border-color 0.3s ease;
+        }
+
+        .dark-mode .form-group input[type="text"],
+        .dark-mode .form-group input[type="number"],
+        .dark-mode .form-group input[type="tel"],
+        .dark-mode .form-group textarea,
+        .dark-mode .form-group select {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: var(--card-dark);
+            color: var(--text-light);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 8px;
+        }
+
+        .dark-mode .note {
+            background: rgba(255, 255, 255, 0.05);
+            color: #aaa;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-top: 4px;
+        }
+
+        .checkbox-group label {
+            display: inline;
+            margin-bottom: 0;
+            font-weight: 400;
+        }
+
+        .location-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .location-input-group input {
+            flex-grow: 1;
+        }
+
+        .select-on-map-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .select-on-map-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .dark-mode #map {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .submit-btn, .cancel-form-btn {
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(90deg, var(--primary), #20c997);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .cancel-form-btn {
+            background-color: var(--secondary);
+            color: #fff;
+        }
+
+        .cancel-form-btn:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        /* Messages */
+        #bookingMessage {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none; /* Hidden by default */
+        }
+
+        #bookingMessage.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--primary);
+        }
+
+        #bookingMessage.error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--status-cancelled);
+        }
+        #bookingMessage.info {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        /* Delivery Type Selection */
+        .delivery-type-selection {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .delivery-type-selection label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+
+        .delivery-type-selection input[type="radio"] {
+            display: none;
+        }
+
+        .delivery-type-selection input[type="radio"]:checked + label {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+        }
+
+        .delivery-type-selection label:hover {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .dark-mode .delivery-type-selection label:hover {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: white;
+        }
+        .dark-mode .delivery-type-selection input[type="radio"]:checked + label {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Collection Points Section */
+        #collectionPointsSection {
+            display: none; /* Hidden by default */
+        }
+        #collectionPointsSection .form-group select {
+            width: 100%;
+        }
+
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 25px 0;
+            font-size: 0.95rem;
+            color: var(--secondary);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: auto;
+        }
+
+        .dark-mode .page-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #aaa;
+        }
+
+        /* Overlay for mobile */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 800;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Responsive Improvements */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: var(--sidebar-width);
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                top: 0;
+                height: 100%;
+                box-shadow: var(--shadow);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar:hover {
+                width: var(--sidebar-width); /* Override hover for mobile */
+            }
+
+            .sidebar-nav ul {
+                padding-top: 80px; /* Adjust padding for mobile sidebar */
+            }
+
+            .sidebar-header {
+                display: block;
+                padding: 20px;
+            }
+
+            .sidebar-nav a {
+                justify-content: flex-start;
+                padding: 12px 20px;
+            }
+
+            .sidebar-nav a span {
+                display: inline;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding-left: 15px;
+                padding-right: 15px;
+                padding-top: calc(var(--header-height) + 15px);
+            }
+
+            .booking-form-container {
+                padding: 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .submit-btn, .cancel-form-btn {
+                width: 100%;
+            }
+
+            .delivery-type-selection {
+                flex-direction: column;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .menu-toggle {
+                display: none;
+            }
+
+            .overlay {
+                display: none !important;
+            }
+
+            .sidebar-nav ul {
+                padding-top: 80px; /* Space for top bar */
+            }
+
+            .sidebar:hover .sidebar-nav ul {
+                padding-top: 0;
+            }
+
+            .sidebar-footer {
+                display: block;
+            }
+
+            .sidebar:not(:hover) .sidebar-footer {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .user-profile {
+                padding: 8px 12px;
+            }
+        }
+
+        .results-container {
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 25px;
+            background-color: var(--bg-light);
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .dark-mode .results-container {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: var(--bg-dark);
+        }
+
+        .result-item {
+            flex-grow: 1;
+            padding: 0 10px;
+        }
+
+        .result-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .dark-mode .result-item strong {
+            color: #aaa;
+        }
+
+        .result-item span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a href="index.html" class="logo">
+            <i class="fas fa-shipping-fast"></i> FikaConnect
+        </a>
+        <div class="user-actions">
+            <div class="language-selector">
+                <select id="languageSelector">
+                    <option value="en">English</option>
+                    <option value="lg">Luganda</option>
+                    <option value="sw">Kiswahili</option>
+                    <option value="fr">French</option>
+                </select>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">S</div>
+                <span class="user-name" id="userNameDisplay">Sender</span>
+            </div>
+        </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>FikaConnect</h2>
+            <p data-translate="sidebarDashboardTitle">Sender Dashboard</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> <span data-translate="navDashboard">Dashboard</span></a></li>
+                <li><a href="book-new-delivery.html" class="active"><i class="fas fa-plus-circle"></i> <span data-translate="navBookNew">Book New</span></a></li>
+                <li><a href="sender profile.html"><i class="fas fa-user-circle"></i> <span data-translate="navProfile">My Profile</span></a></li>
+                <li><a href="sender-active-deliveries.html"><i class="fas fa-history"></i> <span data-translate="navBookings">My Bookings</span></a></li>
+                <li><a href="sender-settings.html"><i class="fas fa-cog"></i> <span data-translate="navSettings">Settings</span></a></li>
+                <li><a href="contact-us.html"><i class="fas fa-headset"></i> <span data-translate="navContact">Contact Us</span></a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> <span data-translate="navAbout">About Us</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span data-translate="logout">Logout</span></a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2 data-translate="bookNewDeliveryTitle"><i class="fas fa-plus-circle"></i> Book a New Delivery</h2>
+        </div>
+
+        <div class="booking-form-container">
+            <form id="newBookingForm" class="booking-form">
+                <div class="form-section">
+                    <h4 data-translate="locationDetailsTitle"><i class="fas fa-map-marker-alt"></i> Location Details</h4>
+
+                    <div class="delivery-type-selection">
+                        <input type="radio" id="directDelivery" name="deliveryType" value="direct" checked>
+                        <label for="directDelivery" data-translate="directDeliveryLabel"><i class="fas fa-truck"></i> Direct Delivery</label>
+
+                        <input type="radio" id="collectionPointDelivery" name="deliveryType" value="collection_point">
+                        <label for="collectionPointDelivery" data-translate="collectionPointDeliveryLabel"><i class="fas fa-map-pin"></i> Collection Point</label>
+                    </div>
+
+                    <div id="directDeliverySection">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="transportCostCheckbox" name="transportCostCheckbox" required>
+                            <label for="transportCostCheckbox" data-translate="transportCostNote">
+                                I understand that transport costs for the driver to my pickup point are my responsibility. The delivery price is counted from the pickup point to the drop-off point.
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="pickupLocation" data-translate="pickupLocationLabel">Pickup Location (Address):</label>
+                            <div class="location-input-group">
+                                <input type="text" id="pickupLocation" name="pickupLocation" required placeholder="e.g., Makerere University, Kampala">
+                                <button type="button" class="select-on-map-btn" id="selectPickupOnMap" data-translate="selectOnMapBtn">Select on Map</button>
+                            </div>
+                            <input type="hidden" id="pickupLat" name="pickupLat">
+                            <input type="hidden" id="pickupLng" name="pickupLng">
+                        </div>
+                        <div class="form-group">
+                            <label for="dropoffLocation" data-translate="dropoffLocationLabel">Drop-off Location (Address):</label>
+                            <div class="location-input-group">
+                                <input type="text" id="dropoffLocation" name="dropoffLocation" required placeholder="e.g., Acacia Mall, Kampala">
+                                <button type="button" class="select-on-map-btn" id="selectDropoffOnMap" data-translate="selectOnMapBtn">Select on Map</button>
+                            </div>
+                            <input type="hidden" id="dropoffLat" name="dropoffLat">
+                            <input type="hidden" id="dropoffLng" name="dropoffLng">
+                        </div>
+                        <div id="map"></div>
+                    </div>
+                    <div id="collectionPointsSection" style="display: none;">
+                        <div class="form-group">
+                            <label for="pickupCollectionPoint" data-translate="pickupCollectionPointLabel">Select Pickup Collection Point:</label>
+                            <select id="pickupCollectionPoint" name="pickupCollectionPoint">
+                                <option value="" disabled selected data-translate="selectPickupCollectionPoint">Select Pickup Point</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dropoffCollectionPoint" data-translate="dropoffCollectionPointLabel">Select Drop-off Collection Point:</label>
+                            <select id="dropoffCollectionPoint" name="dropoffCollectionPoint">
+                                <option value="" disabled selected data-translate="selectDropoffCollectionPoint">Select Drop-off Point</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h4 data-translate="packageDetailsTitle"><i class="fas fa-box-open"></i> Package Details</h4>
+                    <div class="form-group">
+                        <label for="goodsDescription" data-translate="goodsDescriptionLabel">Goods Description:</label>
+                        <textarea id="goodsDescription" name="goodsDescription" rows="3" required placeholder="e.g., 2 boxes of documents, 1 small parcel with clothes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Estimated Weight (kg):</label>
+                        <input type="number" id="weight" name="weight" min="0.1" step="0.1" required placeholder="e.g., 5.5" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="size">Size Category:</label>
+                        <select id="size" name="size">
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                            <option value="xlarge">XLarge</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="fragile" name="fragile">
+                        <label for="fragile">Fragile Item</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="packageDimensions" data-translate="packageDimensionsLabel">Dimensions (LxWxH in cm, optional):</label>
+                        <input type="text" id="packageDimensions" name="packageDimensions" placeholder="e.g., 30x20x15">
+                    </div>
+                    <div class="form-group">
+                        <label for="packageType" data-translate="packageTypeLabel">Package Type:</label>
+                        <select id="packageType" name="packageType" required>
+                            <option value="" disabled selected data-translate="selectPackageType">Select Package Type</option>
+                            <option value="documents" data-translate="packageTypeDocuments">Documents</option>
+                            <option value="parcel" data-translate="packageTypeParcel">Parcel</option>
+                            <option value="electronics" data-translate="packageTypeElectronics">Electronics</option>
+                            <option value="food" data-translate="packageTypeFood">Food</option>
+                            <option value="other" data-translate="packageTypeOther">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h4 data-translate="recipientInfoTitle"><i class="fas fa-user"></i> Recipient Information</h4>
+                    <div class="form-group">
+                        <label for="recipientName" data-translate="recipientNameLabel">Recipient Name:</label>
+                        <input type="text" id="recipientName" name="recipientName" required placeholder="e.g., Jane Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipientPhone" data-translate="recipientPhoneLabel">Recipient Phone Number:</label>
+                        <input type="tel" id="recipientPhone" name="recipientPhone" required placeholder="e.g., +2567XXXXXXXX">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod" data-translate="paymentMethodLabel">Payment Method:</label>
+                    <select id="paymentMethod" name="paymentMethod" required>
+                        <option value="" disabled selected data-translate="selectPaymentMethod">Select Payment Method</option>
+                        <option value="mobile_money" data-translate="paymentMobileMoney">Mobile Money</option>
+                        <option value="cash" data-translate="paymentCash">Cash on Delivery</option>
+                    </select>
+                </div>
+                <div class="results-container">
+                    <div class="result-item">
+                        <strong>Total Fare:</strong> <span id="totalFare">0.00</span> UGX
+                    </div>
+                    <div class="result-item">
+                        <strong>Driver Payout:</strong> <span id="driverPayout">0.00</span> UGX
+                    </div>
+                    <div class="result-item">
+                        <strong>Commission:</strong> <span id="commission">0.00</span> UGX
+                    </div>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="terms-checkbox" name="terms" required>
+                    <label for="terms-checkbox" data-translate="generalTermsNote"> I agree to the <a href="#" class="text-primary hover:underline">Terms and Conditions</a> and confirm that the materials or items I am sending comply with the laws of Uganda. </label>
+                </div>
+                <div id="bookingMessage" style="display: none;"></div>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn" data-translate="bookNowBtn"><i class="fas fa-paper-plane"></i> Book Now</button>
+                    <button type="button" class="cancel-form-btn" data-translate="cancelBtn" onclick="window.location.href='index.html'"><i class="fas fa-times-circle"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
+        <footer class="page-footer">
+            <p>&copy; 2025 FikaConnect — Smart Logistics for East Africa</p>
+        </footer>
+    </div>
+    <script type="module">
+
+    'use strict';
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "124223307329",
+            appId: "1:124223307329:web:76c547b91dcd25205550c0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const languageSelector = document.getElementById('languageSelector');
+        const logoutBtnSidebar = document.getElementById('logoutBtnSidebar');
+        const userAvatar = document.getElementById('userAvatar');
+        const userNameDisplayTop = document.getElementById('userNameDisplay');
+        const newBookingForm = document.getElementById('newBookingForm');
+        const bookingMessage = document.getElementById('bookingMessage');
+        const directDeliveryRadio = document.getElementById('directDelivery');
+        const collectionPointDeliveryRadio = document.getElementById('collectionPointDelivery');
+        const directDeliverySection = document.getElementById('directDeliverySection');
+        const collectionPointsSection = document.getElementById('collectionPointsSection');
+        const transportCostCheckbox = document.getElementById('transportCostCheckbox');
+        const generalTermsCheckbox = document.getElementById('terms-checkbox');
+        const pickupLocationInput = document.getElementById('pickupLocation');
+        const dropoffLocationInput = document.getElementById('dropoffLocation');
+        const selectPickupOnMapBtn = document.getElementById('selectPickupOnMap');
+        const selectDropoffOnMapBtn = document.getElementById('selectDropoffOnMap');
+        const pickupLatInput = document.getElementById('pickupLat');
+        const pickupLngInput = document.getElementById('pickupLng');
+        const dropoffLatInput = document.getElementById('dropoffLat');
+        const dropoffLngInput = document.getElementById('dropoffLng');
+        const mapContainer = document.getElementById('map');
+        const totalFareElement = document.getElementById('totalFare');
+        const driverPayoutElement = document.getElementById('driverPayout');
+        const commissionElement = document.getElementById('commission');
+        const pickupCollectionPointSelect = document.getElementById('pickupCollectionPoint');
+        const dropoffCollectionPointSelect = document.getElementById('dropoffCollectionPoint');
+
+        let CURRENT_SENDER_ID = null;
+        let map;
+        let pickupMarker;
+        let dropoffMarker;
+        let routingControl;
+        let currentSelectionMode = null; // 'pickup' or 'dropoff'
+
+        // Hardcoded Collection Points (replace with Firestore fetch in a real app)
+        const collectionPoints = [
+            { id: 'cp1', name: 'Kampala Central - Main Office', lat: 0.3150, lng: 32.5822 },
+            { id: 'cp2', name: 'Entebbe Road - Kitooro', lat: 0.0536, lng: 32.4632 },
+            { id: 'cp3', name: 'Jinja Road - Mukono', lat: 0.3556, lng: 32.7570 },
+            { id: 'cp4', name: 'Gulu Highway - Luwero', lat: 0.8333, lng: 32.4833 }
+        ];
+        
+        // --- Map and Routing Logic ---
+        function initMap() {
+            if (mapContainer && !map) { // Check if the map container exists and the map hasn't been initialized yet
+                map = L.map(mapContainer).setView([0.3150, 32.5822], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                routingControl = L.Routing.control({
+                    waypoints: [],
+                    routeWhileDragging: true,
+                    show: false, // Don't show the routing panel by default
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    createMarker: function() { return null; }, // We'll create our own markers
+                }).addTo(map);
+
+                map.on('click', onMapClick);
+            }
+        }
+        
+        function onMapClick(e) {
+            if (!currentSelectionMode) return;
+
+            const { lat, lng } = e.latlng;
+
+            if (currentSelectionMode === 'pickup') {
+                if (pickupMarker) {
+                    map.removeLayer(pickupMarker);
+                }
+                pickupMarker = L.marker([lat, lng]).addTo(map);
+                pickupLatInput.value = lat;
+                pickupLngInput.value = lng;
+                updateRoute();
+                currentSelectionMode = null; // Stop selection mode
+            } else if (currentSelectionMode === 'dropoff') {
+                if (dropoffMarker) {
+                    map.removeLayer(dropoffMarker);
+                }
+                dropoffMarker = L.marker([lat, lng]).addTo(map);
+                dropoffLatInput.value = lat;
+                dropoffLngInput.value = lng;
+                updateRoute();
+                currentSelectionMode = null; // Stop selection mode
+            }
+        }
+        
+        function updateRoute() {
+            if (pickupMarker && dropoffMarker) {
+                const pickupLat = parseFloat(pickupLatInput.value);
+                const pickupLng = parseFloat(pickupLngInput.value);
+                const dropoffLat = parseFloat(dropoffLatInput.value);
+                const dropoffLng = parseFloat(dropoffLngInput.value);
+
+                // Check for valid numbers
+                if (isNaN(pickupLat) || isNaN(pickupLng) || isNaN(dropoffLat) || isNaN(dropoffLng)) {
+                    console.error("Invalid coordinates for routing.");
+                    return;
+                }
+                
+                const pickupWaypoint = L.latLng(pickupLat, pickupLng);
+                const dropoffWaypoint = L.latLng(dropoffLat, dropoffLng);
+
+                routingControl.setWaypoints([
+                    pickupWaypoint,
+                    dropoffWaypoint
+                ]);
+                
+                routingControl.on('routesfound', function(e) {
+                    const routes = e.routes;
+                    if (routes && routes.length > 0) {
+                        const distance = routes[0].summary.totalDistance / 1000; // in km
+                        calculateFare(distance);
+                    }
+                });
+            }
+        }
+
+        function calculateFare(distance) {
+            const baseFare = 5000; // e.g., Base fare is 5000 UGX
+            const perKmRate = 1500; // e.g., 1500 UGX per kilometer
+            const commissionRate = 0.20; // e.g., 20% commission
+            const calculatedFare = baseFare + (distance * perKmRate);
+            const commission = calculatedFare * commissionRate;
+            const driverPayout = calculatedFare - commission;
+            
+            // Update the UI
+            totalFareElement.textContent = calculatedFare.toLocaleString('en-UG', { style: 'currency', currency: 'UGX' });
+            driverPayoutElement.textContent = driverPayout.toLocaleString('en-UG', { style: 'currency', currency: 'UGX' });
+            commissionElement.textContent = commission.toLocaleString('en-UG', { style: 'currency', currency: 'UGX' });
+        }
+        
+        // Populate collection point dropdowns
+        function populateCollectionPoints() {
+            collectionPoints.forEach(point => {
+                const option1 = document.createElement('option');
+                option1.value = point.id;
+                option1.textContent = point.name;
+                pickupCollectionPointSelect.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = point.id;
+                option2.textContent = point.name;
+                dropoffCollectionPointSelect.appendChild(option2);
+            });
+        }
+        
+        // --- UI Event Listeners ---
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+        
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+        });
+
+        // Toggle between direct and collection point delivery forms
+        directDeliveryRadio.addEventListener('change', () => {
+            directDeliverySection.style.display = 'block';
+            collectionPointsSection.style.display = 'none';
+        });
+        collectionPointDeliveryRadio.addEventListener('change', () => {
+            directDeliverySection.style.display = 'none';
+            collectionPointsSection.style.display = 'block';
+        });
+
+        selectPickupOnMapBtn.addEventListener('click', () => {
+            currentSelectionMode = 'pickup';
+            alert('Click on the map to select the pickup location.');
+        });
+        selectDropoffOnMapBtn.addEventListener('click', () => {
+            currentSelectionMode = 'dropoff';
+            alert('Click on the map to select the drop-off location.');
+        });
+        
+        // --- Firebase Auth & Firestore Logic ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, see docs for a list of available properties
+                CURRENT_SENDER_ID = user.uid;
+                userNameDisplayTop.textContent = user.displayName || 'Sender';
+                userAvatar.textContent = (user.displayName || 'Sender').charAt(0).toUpperCase();
+
+            } else {
+                // User is signed out, redirect to login page
+                window.location.href = 'login.html';
+            }
+        });
+
+        logoutBtnSidebar.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                // Sign-out successful.
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                // An error happened.
+                console.error("Logout Error:", error);
+            });
+        });
+        
+        newBookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!CURRENT_SENDER_ID) {
+                showMessage("You must be logged in to book a delivery.", 'error');
+                return;
+            }
+
+            if (!transportCostCheckbox.checked && directDeliveryRadio.checked) {
+                showMessage("Please agree to the transport cost terms.", 'error');
+                return;
+            }
+
+            if (!generalTermsCheckbox.checked) {
+                showMessage("Please agree to the general terms and conditions.", 'error');
+                return;
+            }
+
+            showMessage("Booking in progress...", 'info');
+
+            const bookingData = {
+                senderId: CURRENT_SENDER_ID,
+                deliveryType: directDeliveryRadio.checked ? 'direct' : 'collection_point',
+                status: 'pending',
+                timestamp: serverTimestamp(),
+            };
+
+            // Add location details based on delivery type
+            if (bookingData.deliveryType === 'direct') {
+                const pickupLat = parseFloat(pickupLatInput.value);
+                const pickupLng = parseFloat(pickupLngInput.value);
+                const dropoffLat = parseFloat(dropoffLatInput.value);
+                const dropoffLng = parseFloat(dropoffLngInput.value);
+
+                if (isNaN(pickupLat) || isNaN(pickupLng) || isNaN(dropoffLat) || isNaN(dropoffLng)) {
+                    showMessage("Please select valid pickup and drop-off locations on the map.", 'error');
+                    return;
+                }
+
+                bookingData.pickup = {
+                    location: pickupLocationInput.value,
+                    lat: pickupLat,
+                    lng: pickupLng,
+                };
+                bookingData.dropoff = {
+                    location: dropoffLocationInput.value,
+                    lat: dropoffLat,
+                    lng: dropoffLng,
+                };
+
+            } else { // collection_point delivery
+                const pickupCollectionPointId = pickupCollectionPointSelect.value;
+                const dropoffCollectionPointId = dropoffCollectionPointSelect.value;
+
+                if (!pickupCollectionPointId || !dropoffCollectionPointId) {
+                    showMessage("Please select both pickup and drop-off collection points.", 'error');
+                    return;
+                }
+
+                bookingData.pickup = {
+                    collectionPointId: pickupCollectionPointId,
+                    name: collectionPoints.find(p => p.id === pickupCollectionPointId).name,
+                };
+                bookingData.dropoff = {
+                    collectionPointId: dropoffCollectionPointId,
+                    name: collectionPoints.find(p => p.id === dropoffCollectionPointId).name,
+                };
+            }
+
+            // Add package and recipient details
+            bookingData.package = {
+                description: document.getElementById('goodsDescription').value,
+                fragile: document.getElementById('fragile').checked,
+                weight: parseFloat(document.getElementById('packageWeight').value),
+                dimensions: document.getElementById('packageDimensions').value,
+                packageType: document.getElementById('packageType').value,
+            };
+            bookingData.recipient = {
+                name: document.getElementById('recipientName').value,
+                phone: document.getElementById('recipientPhone').value,
+            };
+            
+            // Add fare and payment details
+            bookingData.fare = parseFloat(totalFareElement.textContent.replace(/[UGX,]/g, ''));
+            bookingData.driverPayout = parseFloat(driverPayoutElement.textContent.replace(/[UGX,]/g, ''));
+            bookingData.commission = parseFloat(commissionElement.textContent.replace(/[UGX,]/g, ''));
+            bookingData.paymentMethod = document.getElementById('paymentMethod').value;
+            bookingData.paymentStatus = 'pending';
+
+            try {
+                const docRef = await addDoc(collection(db, "deliveries"), bookingData);
+                showMessage(`Booking successful! Your booking ID is: ${docRef.id}`, 'success');
+                newBookingForm.reset(); // Clear the form
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showMessage("An error occurred. Please try again.", 'error');
+            }
+        });
+
+        function showMessage(message, type) {
+            bookingMessage.textContent = message;
+            bookingMessage.className = `alert alert-${type}`; // Use a more generic class name like alert-success, etc.
+            bookingMessage.style.display = 'block';
+        }
+
+        // Initialize the map on page load
+        initMap();
+
+        // Populate collection point dropdowns
+        populateCollectionPoints();
+
+        
+    });
+
+// Submit booking
+document.getElementById("bookingForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const deliveryType = document.getElementById("deliveryType").value;
+  const weightKg = parseFloat(document.getElementById("weightKg").value);
+  const sizeCategory = document.getElementById("sizeCategory").value;
+  const fragile = document.getElementById("fragile").checked;
+
+  const result = calculateFare(deliveryType, parseFloat(distanceKm), weightKg, sizeCategory, fragile);
+
+  db.collection("bookings").add({
+    deliveryType,
+    pickup: { lat: pickupLatLng.lat, lng: pickupLatLng.lng },
+    dropoff: { lat: dropoffLatLng.lat, lng: dropoffLatLng.lng },
+    distanceKm: parseFloat(distanceKm),
+    weightKg,
+    sizeCategory,
+    fragile,
+    totalFare: result.totalFare,
+    commission: result.commission,
+    driverPayout: result.driverPayout,
+    status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(docRef => {
+    db.collection("bookings").doc(docRef.id).update({ bookingId: docRef.id });
+    alert(`Booking submitted! Tracking ID: ${docRef.id}`);
+  });
+});
+</script>
+</body>
+</html>

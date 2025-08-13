@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    function isDriver() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isDriver == true;
+    }
+    
+    function isSender() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isDriver == false || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isDriver == null);
+    }
+    
+    function isOwnerOfBooking(bookingId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.customerId == request.auth.uid;
+    }
+    
+    function isAssignedDriver(bookingId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.assignedDriver == request.auth.uid;
+    }
+    
+    // Rules for users collection
+    match /users/{userId} {
+      // Users can read and write their own data
+      // Admins can read all user data
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Rules for admins collection
+    match /admins/{adminId} {
+      // Only admins can read admin data
+      // Only the specific admin can write their own data
+      allow read: if isAdmin();
+      allow write: if isAuthenticated() && request.auth.uid == adminId && isAdmin();
+    }
+    
+    // Rules for drivers collection (if used separately from users)
+    match /drivers/{driverId} {
+      // Drivers can read and write their own data
+      // Admins can read all driver data
+      allow read: if isAuthenticated() && (request.auth.uid == driverId || isAdmin());
+      allow write: if isAuthenticated() && request.auth.uid == driverId;
+      allow create: if isAuthenticated() && request.auth.uid == driverId;
+    }
+    
+    // Rules for bookings collection
+    match /bookings/{bookingId} {
+      // Senders can read their own bookings
+      // Drivers can read bookings assigned to them or available bookings
+      // Admins can read all bookings
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid || 
+        resource.data.assignedDriver == request.auth.uid || 
+        resource.data.status == "Pending Driver Assignment" ||
+        isAdmin()
+      );
+      
+      // Senders can create bookings
+      allow create: if isAuthenticated() && 
+                     request.resource.data.customerId == request.auth.uid;
+      
+      // Senders can update their own bookings (limited fields)
+      // Drivers can update bookings assigned to them (limited fields)
+      // Admins can update any booking
+      allow update: if isAuthenticated() && (
+        (resource.data.customerId == request.auth.uid && 
+         (request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'customerNotes']))) ||
+        (resource.data.assignedDriver == request.auth.uid && 
+         (request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'lastStatusUpdate', 'assignedDriver', 'assignmentDate']))) ||
+        (resource.data.status == "Pending Driver Assignment" && isDriver() &&
+         (request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'assignedDriver', 'assignmentDate']))) ||
+        isAdmin()
+      );
+      
+      // Only admins can delete bookings
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+    
+    // Rules for collectionPoints collection
+    match /collectionPoints/{pointId} {
+      // Anyone can read collection points
+      // Only admins can write collection points
+      allow read: if true;
+      allow write: if isAuthenticated() && isAdmin();
+    }
+    
+    // Default allow for authenticated users (temporary for debugging)
+    // Remove this in production and use specific rules above
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+}

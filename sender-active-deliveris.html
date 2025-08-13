@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Track Delivery - FikaConnect</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+  #map { height: 100vh; }
+</style>
+</head>
+<body>
+
+<h3>Tracking Delivery</h3>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+    authDomain: "fika-connect-5f844.firebaseapp.com",
+    projectId: "fika-connect-5f844",
+    storageBucket: "fika-connect-5f844.appspot.com",
+    messagingSenderId: "492360448361",
+    appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const rtdb = firebase.database();
+const auth = firebase.auth(); // Assuming you have Firebase Auth imported
+const db = firebase.firestore(); // Assuming you have Firebase Firestore imported
+
+// Declare a global variable for the current sender ID
+let CURRENT_SENDER_ID; 
+
+// References to HTML elements
+const map = L.map("map").setView([0, 0], 13);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+const truckIcon = L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/1995/1995470.png", iconSize: [40, 40] });
+const truckMarker = L.marker([0, 0], { icon: truckIcon }).addTo(map);
+
+// Replace with actual bookingId
+const bookingId = new URLSearchParams(window.location.search).get("id") || "test_booking_id";
+
+// --- Realtime Database Logic ---
+rtdb.ref(`tracking/${bookingId}`).on("value", snapshot => {
+    const data = snapshot.val();
+    if (data) {
+        truckMarker.setLatLng([data.lat, data.lng]);
+        map.setView([data.lat, data.lng], 14);
+    }
+});
+
+// --- Firebase Auth & Firestore Logic ---
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        CURRENT_SENDER_ID = user.uid;
+        userNameDisplay.textContent = user.displayName || 'Sender';
+        userAvatar.textContent = (user.displayName || 'S').charAt(0).toUpperCase();
+        fetchActiveDeliveries();
+    } else {
+        window.location.href = 'login.html';
+    }
+});
+
+logoutBtnSidebar.addEventListener('click', (e) => {
+    e.preventDefault();
+    signOut(auth).then(() => {
+        window.location.href = 'login.html';
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+    });
+});
+
+async function fetchActiveDeliveries() {
+    if (!CURRENT_SENDER_ID) {
+        showMessage("You must be logged in to view deliveries.", 'error');
+        return;
+    }
+
+    deliveriesMessage.textContent = "Loading your deliveries...";
+    deliveriesMessage.className = 'alert info';
+    deliveriesMessage.style.display = 'block';
+    deliveriesList.innerHTML = '';
+
+    try {
+        const q = query(
+            collection(db, "deliveries"),
+            where("senderId", "==", CURRENT_SENDER_ID),
+            orderBy("timestamp", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            deliveriesMessage.textContent = "You have no active deliveries.";
+            deliveriesMessage.className = 'alert warning';
+        } else {
+            deliveriesMessage.style.display = 'none';
+            querySnapshot.forEach((doc) => {
+                const delivery = doc.data();
+                const deliveryCard = createDeliveryCard(doc.id, delivery);
+                deliveriesList.appendChild(deliveryCard);
+            });
+        }
+    } catch (e) {
+        console.error("Error fetching deliveries: ", e);
+        showMessage("An error occurred while fetching deliveries. Please try again.", 'error');
+    }
+}
+
+function createDeliveryCard(docId, delivery) {
+    const deliveryCard = document.createElement('div');
+    deliveryCard.className = 'delivery-card';
+    
+    const pickupInfo = delivery.deliveryType === 'direct' ? `Lat: ${delivery.pickup.lat}, Lng: ${delivery.pickup.lng}` : delivery.pickup.name;
+    const dropoffInfo = delivery.deliveryType === 'direct' ? `Lat: ${delivery.dropoff.lat}, Lng: ${delivery.dropoff.lng}` : delivery.dropoff.name;
+    
+    deliveryCard.innerHTML = `
+        <h3>Booking ID: ${docId}</h3>
+        <p><strong>Pickup:</strong> ${pickupInfo}</p>
+        <p><strong>Drop-off:</strong> ${dropoffInfo}</p>
+        <p><strong>Status:</strong> <span class="status ${delivery.status}">${delivery.status}</span></p>
+        <p><strong>Description:</strong> ${delivery.package.description}</p>
+        <p><strong>Total Fare:</strong> UGX ${delivery.fareDetails.totalFare.toLocaleString()}</p>
+        <p><strong>Type:</strong> ${delivery.deliveryType === 'direct' ? 'Direct Delivery' : 'Collection Point'}</p>
+    `;
+    return deliveryCard;
+}
+
+function showMessage(message, type) {
+    deliveriesMessage.textContent = message;
+    deliveriesMessage.className = `alert ${type}`;
+    deliveriesMessage.style.display = 'block';
+    setTimeout(() => {
+        deliveriesMessage.style.display = 'none';
+    }, 5000);
+}
+</script>
+</body>
+</html>

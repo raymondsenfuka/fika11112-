@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FikaConnect Sign Up</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons (e.g., eye icon for password) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+        }
+        /* Custom styles for the message box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none; /* Hidden by default */
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-box.info { /* Added for info messages */
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        /* Style for active step indicator */
+        .step-indicator.active {
+            background-color: #2563eb; /* Blue for active step */
+        }
+        /* Style for completed step indicator */
+        .step-indicator.completed {
+            background-color: #10b981; /* Green for completed step */
+        }
+        .card-option {
+            @apply flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition duration-150 ease-in-out;
+        }
+        .card-option.selected {
+            @apply border-blue-500 ring-2 ring-blue-500 bg-blue-50;
+        }
+        /* Password strength indicator styles */
+        .password-strength {
+            width: 100%;
+            height: 5px;
+            background-color: #e0e0e0;
+            border-radius: 2.5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .password-strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+        .strength-weak {
+            width: 33%;
+            background-color: #ef4444; /* Red */
+        }
+        .strength-medium {
+            width: 66%;
+            background-color: #f59e0b; /* Orange */
+        }
+        .strength-strong {
+            width: 100%;
+            background-color: #22c55e; /* Green */
+        }
+        /* Driver info section styles */
+        .driver-info-section {
+            background-color: #e0f2fe; /* Light blue */
+            border: 1px solid #90cdf4;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: #2a4365;
+            display: none; /* Hidden by default */
+            transition: all 0.3s ease-in-out;
+        }
+        .driver-info-section.active {
+            display: block;
+        }
+        .driver-info-section h3 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .driver-info-section h3 i {
+            margin-right: 0.5rem;
+        }
+        .driver-info-section ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .driver-info-section li {
+            margin-bottom: 0.25rem;
+        }
+        .driver-info-section .highlight {
+            font-weight: 600;
+            color: #1d4ed8; /* Darker blue */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Message Box for alerts -->
+    <div id="messageBox" class="message-box"></div>
+
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <div class="text-center mb-6">
+            <h1 id="signupTitle" class="text-3xl font-bold text-gray-800 mb-2">Join FikaConnect!</h1>
+            <p id="signupSubtitle" class="text-gray-600">Create your account to get started</p>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="flex justify-center mb-6 space-x-2">
+            <div id="step1Indicator" class="step-indicator w-8 h-2 rounded-full bg-gray-300 active"></div>
+            <div id="step2Indicator" class="step-indicator w-8 h-2 rounded-full bg-gray-300"></div>
+            <div id="step3Indicator" class="step-indicator w-8 h-2 rounded-full bg-gray-300"></div>
+        </div>
+
+        <form id="signupForm" class="space-y-4">
+
+            <!-- Step 1: Choose Role -->
+            <div id="step1" class="form-step">
+                <p id="chooseRoleText" class="text-center text-lg font-medium text-gray-800 mb-4">How will you use FikaConnect?</p>
+                <div class="space-y-3">
+                    <div id="senderCard" class="card-option" data-role="sender">
+                        <i class="fa-solid fa-box-open text-blue-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-semibold text-gray-800">Sender</p>
+                            <p class="text-sm text-gray-600">Send goods, find transporters</p>
+                        </div>
+                    </div>
+                    <div id="transporterCard" class="card-option" data-role="transporter">
+                        <i class="fa-solid fa-truck text-green-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-semibold text-gray-800">Transporter</p>
+                            <p class="text-sm text-gray-600">Drive and deliver goods</p>
+                        </div>
+                    </div>
+                    <div id="adminCard" class="card-option" data-role="admin">
+                        <i class="fa-solid fa-user-tie text-purple-500 text-xl mr-3"></i>
+                        <div>
+                            <p class="font-semibold text-gray-800">Admin</p>
+                            <p class="text-sm text-gray-600">Manage platform operations</p>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="nextStep1" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out mt-6">
+                    <span id="continueButtonText">Continue</span>
+                </button>
+            </div>
+
+            <!-- Step 2: Personal Details -->
+            <div id="step2" class="form-step hidden">
+                <div class="flex items-center mb-4">
+                    <button type="button" id="backStep2" class="text-gray-600 hover:text-gray-800 mr-3">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <p id="personalDetailsText" class="text-lg font-medium text-gray-800">Personal Details</p>
+                </div>
+                <div>
+                    <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                </div>
+                <div>
+                    <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" name="email" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                </div>
+                <div>
+                    <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="+256 7XX XXX XXX" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                </div>
+                <div>
+                    <label for="district" class="block text-sm font-medium text-gray-700 mb-1">District</label>
+                    <select id="district" name="district" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                        <option value="">Select your district</option>
+                        <!-- Example districts for Uganda -->
+                        <option value="Kampala">Kampala</option>
+                        <option value="Wakiso">Wakiso</option>
+                        <option value="Mukono">Mukono</option>
+                        <option value="Mpigi">Mpigi</option>
+                        <option value="Jinja">Jinja</option>
+                        <option value="Gulu">Gulu</option>
+                        <option value="Mbarara">Mbarara</option>
+                        <!-- Add more districts as needed -->
+                    </select>
+                </div>
+                <button type="button" id="nextStep2" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out mt-6">
+                    <span id="continueButtonText2">Continue</span>
+                </button>
+            </div>
+
+            <!-- Step 3: Conditional Details & Password -->
+            <div id="step3" class="form-step hidden">
+                <div class="flex items-center mb-4">
+                    <button type="button" id="backStep3" class="text-gray-600 hover:text-gray-800 mr-3">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <p id="step3Title" class="text-lg font-medium text-gray-800"></p>
+                </div>
+
+                <!-- Fields for Sender/Admin -->
+                <div id="senderAdminFields" class="space-y-4">
+                    <div>
+                        <label for="businessName" class="block text-sm font-medium text-gray-700 mb-1">Business Name (Optional)</label>
+                        <input type="text" id="businessName" name="businessName"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                    </div>
+                    <div>
+                        <label for="businessType" class="block text-sm font-medium text-gray-700 mb-1">Business Type</label>
+                        <select id="businessType" name="businessType"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                            <option value="">Select business type</option>
+                            <!-- Example business types -->
+                            <option value="Individual">Individual</option>
+                            <option value="SME">Small/Medium Enterprise</option>
+                            <option value="NGO">NGO</option>
+                            <option value="Large Corporation">Large Corporation</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Fields for Transporter -->
+                <div id="transporterFields" class="space-y-4 hidden">
+                    <div>
+                        <label for="vehicleType" class="block text-sm font-medium text-gray-700 mb-1">Vehicle Type</label>
+                        <select id="vehicleType" name="vehicleType"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                            <option value="">Select vehicle type</option>
+                            <option value="Truck">Truck</option>
+                            <option value="Van">Van</option>
+                            <option value="Boda-boda">Boda-boda (Motorcycle)</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="vehicleRegistration" class="block text-sm font-medium text-gray-700 mb-1">Vehicle Registration</label>
+                        <input type="text" id="vehicleRegistration" name="vehicleRegistration"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                    </div>
+                    <div>
+                        <label for="licenseNumber" class="block text-sm font-medium text-gray-700 mb-1">License Number</label>
+                        <input type="text" id="licenseNumber" name="licenseNumber"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+                    </div>
+                    <!-- Driver info section from your snippet -->
+                    <div id="driverInfoSection" class="driver-info-section">
+                        <h3><i class="fas fa-info-circle"></i> Driver Registration Information</h3>
+                        <p>As a driver, you will need to provide the following information after registration:</p>
+                        <ul>
+                            <li>Valid driver's license</li>
+                            <li>Vehicle registration documents</li>
+                            <li>Proof of insurance</li>
+                            <li>Vehicle type (e.g., <span class="highlight">Pickup Truck</span>, <span class="highlight">Van</span>, <span class="highlight">Boda-boda</span>)</li>
+                            <li>Vehicle plate number</li>
+                        </ul>
+                        <p>Your account will be reviewed by our team and you'll receive a notification once approved.</p>
+                    </div>
+                </div>
+
+                <!-- Common Password Fields -->
+                <div class="space-y-4 mt-4">
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out pr-10">
+                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" id="togglePassword">
+                                <i class="fa-solid fa-eye text-gray-500"></i>
+                            </span>
+                        </div>
+                        <div class="password-strength">
+                            <div class="password-strength-fill"></div>
+                        </div>
+                        <p id="minPasswordText" class="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                    </div>
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                        <div class="relative">
+                            <input type="password" id="confirmPassword" name="confirmPassword" required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out pr-10">
+                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" id="toggleConfirmPassword">
+                                <i class="fa-solid fa-eye text-gray-500"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="signupButton"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out flex items-center justify-center mt-6">
+                    <span id="createAccountButtonText">Create Account</span>
+                    <svg id="loadingSpinner" class="animate-spin h-5 w-5 text-white ml-2 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <p class="text-center text-gray-600 text-sm mt-6">
+            Already have an account?
+            <a href="login.html" id="signInHereLink" class="text-blue-600 hover:text-blue-700 font-medium">Log In</a>
+        </p>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Your Firebase Configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU", // Ensure this is your correct Firebase API key
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "124223307329",
+            appId: "1:124223307329:web:76c547b91dcd25205550c0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentStep = 1;
+        let userData = {}; // Object to store data across steps
+
+        // Object to hold translations (simplified for demonstration)
+        const translations = {
+            en: {
+                welcomeBack: "Welcome Back!",
+                loginPrompt: "Log in to your FikaConnect account",
+                emailAddress: "Email Address",
+                password: "Password",
+                rememberMe: "Remember me",
+                forgotPassword: "Forgot Password?",
+                logIn: "Log In",
+                loggingIn: "Logging In...",
+                noAccount: "Don't have an account?",
+                signUp: "Sign Up",
+                aboutUs: "About Us",
+                selectUserType: "Select User Type",
+                goodsSender: "Goods Sender",
+                transporter: "Transporter",
+                admin: "Admin",
+                joinFikaConnect: "Join FikaConnect!",
+                createAccountPrompt: "Create your account to get started",
+                minPassword: "Minimum 6 characters",
+                confirmPassword: "Confirm Password",
+                iAmA: "I am a...",
+                continue: "Continue",
+                signingUp: "Signing Up...",
+                alreadyHaveAccount: "Already have an account?",
+                signInHere: "Log In",
+                firstName: "First Name",
+                lastName: "Last Name",
+                phoneNumber: "Phone Number",
+                district: "District",
+                selectDistrict: "Select your district",
+                businessName: "Business Name (Optional)",
+                businessType: "Business Type",
+                selectBusinessType: "Select business type",
+                createAccount: "Create Account",
+                passwordsDoNotMatch: "Passwords do not match.",
+                passwordTooWeak: "Password must be at least 6 characters long.",
+                selectUserTypeMessage: "Please select a user type.",
+                accountCreatedSuccess: "Account created successfully!",
+                loginSuccess: "Login successful!",
+                invalidEmail: "Invalid email address format.",
+                userDisabled: "This account has been disabled.",
+                userNotFound: "No user found with this email.",
+                wrongPassword: "Incorrect password.",
+                tooManyRequests: "Too many login attempts. Please try again later.",
+                emailInUse: "This email address is already in use.",
+                operationNotAllowed: "Email/password accounts are not enabled. Please contact support.",
+                unknownError: "An unknown error occurred.",
+                chooseRoleText: "How will you use FikaConnect?",
+                personalDetailsText: "Personal Details",
+                businessPasswordText: "Business Details & Password",
+                vehicleDetailsPasswordText: "Vehicle Details & Password",
+                vehicleType: "Vehicle Type",
+                selectVehicleType: "Select vehicle type",
+                vehicleRegistration: "Vehicle Registration",
+                licenseNumber: "License Number",
+                fillVehicleDetails: "Please fill in all vehicle details."
+            },
+            lg: {
+                welcomeBack: "Tukusanyukidde!",
+                loginPrompt: "Yingira mu akawunti yo eya FikaConnect",
+                emailAddress: "Endagiriro ya Email",
+                password: "Ekigambo ky'ekyama",
+                rememberMe: "Nzijukira",
+                forgotPassword: "Werabidde ekigambo ky'ekyama?",
+                logIn: "Yingira",
+                loggingIn: "Nyingira...",
+                noAccount: "Tolina akawunti?",
+                signUp: "Wandisa",
+                aboutUs: "Kwatukwata",
+                selectUserType: "Londa ekika ky'omukozesa",
+                goodsSender: "Omuweereza w'ebintu",
+                transporter: "Omutambuza",
+                admin: "Omuddukanya",
+                joinFikaConnect: "Gatta FikaConnect!",
+                createAccountPrompt: "Kola akawunti yo okutandika",
+                minPassword: "Wansi wa nnakyewa 6",
+                confirmPassword: "Kakasibwa Ekigambo ky'ekyama",
+                iAmA: "Nze ndi...",
+                continue: "Genda mu maaso",
+                signingUp: "Nkwandisa...",
+                alreadyHaveAccount: "Oli n'akawunti dda?",
+                signInHere: "Yingira",
+                firstName: "Erinnya ery'olubereberye",
+                lastName: "Erinnya ery'oluvannyuma",
+                phoneNumber: "Namba y'essimu",
+                district: "Disitulikiti",
+                selectDistrict: "Londa disitulikiti yo",
+                businessName: "Erinnya ly'omulimu (Ky'osobola)",
+                businessType: "Ekika ky'omulimu",
+                selectBusinessType: "Londa ekika ky'omulimu",
+                createAccount: "Kola Akawunti",
+                passwordsDoNotMatch: "Ebigambo by'ekyama tebifaanana.",
+                passwordTooWeak: "Ekigambo ky'ekyama kinnafu nnyo. Londa ekirala ekizimba.",
+                selectUserTypeMessage: "Londa ekika ky'omukozesa.",
+                accountCreatedSuccess: "Akawunti ekoleddwa bulungi!",
+                loginSuccess: "Oyingidde bulungi!",
+                invalidEmail: "Endagiriro ya email si nnungi.",
+                userDisabled: "Akawunti eno ekozeddwako.",
+                userNotFound: "Tewali mukozesa alina email eno.",
+                wrongPassword: "Ekigambo ky'ekyama kikyamu.",
+                tooManyRequests: "Okuyingira kungi nnyo. Gezaako oluvannyuma.",
+                emailInUse: "Endagiriro ya email eno ekozeddwako dda.",
+                operationNotAllowed: "Akawunti za email/password tezikirizibwa. Tuggyako obuyambi.",
+                unknownError: "Waliwo ekintu ekikyasobye.",
+                chooseRoleText: "Onaakozesa otya FikaConnect?",
+                personalDetailsText: "Ebikukwatako",
+                businessPasswordText: "Ebikwata ku mulimu n'ekigambo ky'ekyama",
+                vehicleDetailsPasswordText: "Ebikwata ku mmotoka n'ekigambo ky'ekyama",
+                vehicleType: "Ekika ky'emmotoka",
+                selectVehicleType: "Londa ekika ky'emmotoka",
+                vehicleRegistration: "Namba y'okwandiisa emmotoka",
+                licenseNumber: "Namba y'olukusa",
+                fillVehicleDetails: "Jjuza ebikwata ku mmotoka byonna."
+            },
+            sw: {
+                welcomeBack: "Karibu Tena!",
+                loginPrompt: "Ingia kwenye akaunti yako ya FikaConnect",
+                emailAddress: "Anwani ya Barua Pepe",
+                password: "Nenosiri",
+                rememberMe: "Nikumbuke",
+                forgotPassword: "Umesahau Nenosiri?",
+                logIn: "Ingia",
+                loggingIn: "Inaingia...",
+                noAccount: "Huna akaunti?",
+                signUp: "Jisajili",
+                aboutUs: "Kuhusu Sisi",
+                selectUserType: "Chagua Aina ya Mtumiaji",
+                goodsSender: "Mtumaji Bidhaa",
+                transporter: "Msafirishaji",
+                admin: "Msimamizi",
+                joinFikaConnect: "Jiunge na FikaConnect!",
+                createAccountPrompt: "Fungua akaunti yako ili uanze",
+                minPassword: "Angalau herufi 6",
+                confirmPassword: "Thibitisha Nenosiri",
+                iAmA: "Mimi ni...",
+                continue: "Endelea",
+                signingUp: "Inajisajili...",
+                alreadyHaveAccount: "Tayari una akaunti?",
+                signInHere: "Ingia",
+                firstName: "Jina la Kwanza",
+                lastName: "Jina la Mwisho",
+                phoneNumber: "Namba ya Simu",
+                district: "Wilaya",
+                selectDistrict: "Chagua wilaya yako",
+                businessName: "Jina la Biashara (Si lazima)",
+                businessType: "Aina ya Biashara",
+                selectBusinessType: "Chagua aina ya biashara",
+                createAccount: "Fungua Akaunti",
+                passwordsDoNotMatch: "Nenosiri hazifanani.",
+                passwordTooWeak: "Nenosiri ni dhaifu sana. Tafadhali chagua nenosiri lenye nguvu zaidi.",
+                selectUserTypeMessage: "Tafadhali chagua aina ya mtumiaji.",
+                accountCreatedSuccess: "Akaunti imefanikiwa kuundwa!",
+                loginSuccess: "Kuingia kumefanikiwa!",
+                invalidEmail: "Muundo wa barua pepe si sahihi.",
+                userDisabled: "Akaunti hii imezimwa.",
+                userNotFound: "Hakuna mtumiaji aliyepatikana na barua pepe hii.",
+                wrongPassword: "Nenosiri si sahihi.",
+                tooManyRequests: "Jaribio nyingi za kuingia. Tafadhali jaribu tena baadaye.",
+                emailInUse: "Anwani hii ya barua pepe tayari inatumika.",
+                operationNotAllowed: "Akaunti za barua pepe/nenosiri haziruhusiwi. Tafadhali wasiliana na usaidizi.",
+                unknownError: "Hitilafu isiyojulikana imetokea.",
+                chooseRoleText: "Utaitumiaje FikaConnect?",
+                personalDetailsText: "Maelezo ya Kibinafsi",
+                businessPasswordText: "Maelezo ya Biashara & Nenosiri",
+                vehicleDetailsPasswordText: "Maelezo ya Gari & Nenosiri",
+                vehicleType: "Aina ya Gari",
+                selectVehicleType: "Chagua aina ya gari",
+                vehicleRegistration: "Usajili wa Gari",
+                licenseNumber: "Namba ya Leseni",
+                fillVehicleDetails: "Tafadhali jaza maelezo yote ya gari."
+            },
+            ls: {
+                welcomeBack: "Muzze Mirembe!",
+                loginPrompt: "Yingira mu akawunti yo eya FikaConnect",
+                emailAddress: "Endagiriro y'Email",
+                password: "Ekigambo ky'ekyama",
+                rememberMe: "Nzijukira",
+                forgotPassword: "Werabidde ekigambo ky'ekyama?",
+                logIn: "Yingira",
+                loggingIn: "Nyingira...",
+                noAccount: "Tolina akawunti?",
+                signUp: "Wandisa",
+                aboutUs: "Kwatukwata",
+                selectUserType: "Londa ekika ky'omukozesa",
+                goodsSender: "Omuweereza w'ebintu",
+                transporter: "Omutambuza",
+                admin: "Omuddukanya",
+                joinFikaConnect: "Gatta FikaConnect!",
+                createAccountPrompt: "Kola akawunti yo okutandika",
+                minPassword: "Wansi wa nnakyewa 6",
+                confirmPassword: "Kakasibwa Ekigambo ky'ekyama",
+                iAmA: "Nze ndi...",
+                continue: "Genda mu maaso",
+                signingUp: "Nkwandisa...",
+                alreadyHaveAccount: "Oli n'akawunti dda?",
+                signInHere: "Yingira",
+                firstName: "Erinnya ery'olubereberye",
+                lastName: "Erinnya ery'oluvannyuma",
+                phoneNumber: "Namba y'essimu",
+                district: "Disitulikiti",
+                selectDistrict: "Londa disitulikiti yo",
+                businessName: "Erinnya ly'omulimu (Ky'osobola)",
+                businessType: "Ekika ky'omulimu",
+                selectBusinessType: "Londa ekika ky'omulimu",
+                createAccount: "Kola Akawunti",
+                passwordsDoNotMatch: "Ebigambo by'ekyama tebifaanana.",
+                passwordTooWeak: "Ekigambo ky'ekyama kinnafu nnyo. Londa ekirala ekizimba.",
+                selectUserTypeMessage: "Londa ekika ky'omukozesa.",
+                accountCreatedSuccess: "Akawunti ekoleddwa bulungi!",
+                loginSuccess: "Oyingidde bulungi!",
+                invalidEmail: "Endagiriro ya email si nnungi.",
+                userDisabled: "Akawunti eno ekozeddwako.",
+                userNotFound: "Tewali mukozesa alina email eno.",
+                wrongPassword: "Ekigambo ky'ekyama kikyamu.",
+                tooManyRequests: "Okuyingira kungi nnyo. Gezaako oluvannyuma.",
+                emailInUse: "Endagiriro ya email eno ekozeddwako dda.",
+                operationNotAllowed: "Akawunti za email/password tezikirizibwa. Tuggyako obuyambi.",
+                unknownError: "Waliwo ekintu ekikyasobye.",
+                chooseRoleText: "Onaakozesa otya FikaConnect?",
+                personalDetailsText: "Ebikukwatako",
+                businessPasswordText: "Ebikwata ku mulimu n'ekigambo ky'ekyama",
+                vehicleDetailsPasswordText: "Ebikwata ku mmotoka n'ekigambo ky'ekyama",
+                vehicleType: "Ekika ky'emmotoka",
+                selectVehicleType: "Londa ekika ky'emmotoka",
+                vehicleRegistration: "Namba y'okwandiisa emmotoka",
+                licenseNumber: "Namba y'olukusa",
+                fillVehicleDetails: "Jjuza ebikwata ku mmotoka byonna."
+            },
+            fr: {
+                welcomeBack: "Bienvenue de nouveau !",
+                loginPrompt: "Connectez-vous à votre compte FikaConnect",
+                emailAddress: "Adresse e-mail",
+                password: "Mot de passe",
+                rememberMe: "Se souvenir de moi",
+                forgotPassword: "Mot de passe oublié ?",
+                logIn: "Se connecter",
+                loggingIn: "Connexion...",
+                noAccount: "Vous n'avez pas de compte ?",
+                signUp: "S'inscrire",
+                aboutUs: "À propos de nous",
+                selectUserType: "Sélectionner le type d'utilisateur",
+                goodsSender: "Expéditeur de marchandises",
+                transporter: "Transporteur",
+                admin: "Administrateur",
+                joinFikaConnect: "Rejoignez FikaConnect !",
+                createAccountPrompt: "Créez votre compte pour commencer",
+                minPassword: "Minimum 6 caractères",
+                confirmPassword: "Confirmer le mot de passe",
+                iAmA: "Je suis un(e)...",
+                continue: "Continuer",
+                signingUp: "Inscription...",
+                alreadyHaveAccount: "Vous avez déjà un compte ?",
+                signInHere: "Se connecter",
+                firstName: "Prénom",
+                lastName: "Nom de famille",
+                phoneNumber: "Numéro de téléphone",
+                district: "District",
+                selectDistrict: "Sélectionnez votre district",
+                businessName: "Nom de l'entreprise (Facultatif)",
+                businessType: "Type d'entreprise",
+                selectBusinessType: "Sélectionnez le type d'entreprise",
+                createAccount: "Créer un compte",
+                passwordsDoNotMatch: "Les mots de passe ne correspondent pas.",
+                passwordTooWeak: "Le mot de passe est trop faible. Veuillez en choisir un plus fort.",
+                selectUserTypeMessage: "Veuillez sélectionner un type d'utilisateur.",
+                accountCreatedSuccess: "Compte créé avec succès !",
+                loginSuccess: "Connexion réussie !",
+                invalidEmail: "Format d'adresse e-mail invalide.",
+                userDisabled: "Ce compte a été désactivé.",
+                userNotFound: "Aucun utilisateur trouvé avec cet e-mail.",
+                wrongPassword: "Mot de passe incorrect.",
+                tooManyRequests: "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
+                emailInUse: "Cette adresse e-mail est déjà utilisée.",
+                operationNotAllowed: "Les comptes e-mail/mot de passe ne sont pas activés. Veuillez contacter le support.",
+                unknownError: "Une erreur inconnue est survenue.",
+                chooseRoleText: "Comment utiliserez-vous FikaConnect ?",
+                personalDetailsText: "Détails personnels",
+                businessPasswordText: "Détails de l'entreprise et mot de passe",
+                vehicleDetailsPasswordText: "Détails du véhicule et mot de passe",
+                vehicleType: "Type de véhicule",
+                selectVehicleType: "Sélectionnez le type de véhicule",
+                vehicleRegistration: "Immatriculation du véhicule",
+                licenseNumber: "Numéro de permis",
+                fillVehicleDetails: "Veuillez remplir tous les détails du véhicule."
+            }
+        };
+
+        // Function to update UI text based on selected language
+        function updateUIText(lang) {
+            document.getElementById('signupTitle').textContent = translations[lang].joinFikaConnect;
+            document.getElementById('signupSubtitle').textContent = translations[lang].createAccountPrompt;
+            document.getElementById('chooseRoleText').textContent = translations[lang].chooseRoleText;
+            document.getElementById('senderCard').querySelector('p:first-child').textContent = translations[lang].goodsSender;
+            document.getElementById('senderCard').querySelector('p:last-child').textContent = "Send goods, find transporters"; // This text is fixed in the image
+            document.getElementById('transporterCard').querySelector('p:first-child').textContent = translations[lang].transporter;
+            document.getElementById('transporterCard').querySelector('p:last-child').textContent = "Drive and deliver goods"; // This text is fixed in the image
+            document.getElementById('adminCard').querySelector('p:first-child').textContent = translations[lang].admin;
+            document.getElementById('adminCard').querySelector('p:last-child').textContent = "Manage platform operations"; // This text is fixed in the image
+            document.getElementById('continueButtonText').textContent = translations[lang].continue;
+            document.getElementById('personalDetailsText').textContent = translations[lang].personalDetailsText;
+            document.querySelector('label[for="firstName"]').textContent = translations[lang].firstName;
+            document.querySelector('label[for="lastName"]').textContent = translations[lang].lastName;
+            document.querySelector('label[for="email"]').textContent = translations[lang].emailAddress;
+            document.querySelector('label[for="phoneNumber"]').textContent = translations[lang].phoneNumber;
+            document.querySelector('label[for="district"]').textContent = translations[lang].district;
+            document.querySelector('#district option[value=""]').textContent = translations[lang].selectDistrict;
+            document.getElementById('continueButtonText2').textContent = translations[lang].continue;
+
+            // Update step 3 title and labels based on user type
+            if (userData.userType === 'transporter') {
+                document.getElementById('step3Title').textContent = translations[lang].vehicleDetailsPasswordText;
+                document.querySelector('label[for="vehicleType"]').textContent = translations[lang].vehicleType;
+                document.querySelector('#vehicleType option[value=""]').textContent = translations[lang].selectVehicleType;
+                document.querySelector('label[for="vehicleRegistration"]').textContent = translations[lang].vehicleRegistration;
+                document.querySelector('label[for="licenseNumber"]').textContent = translations[lang].licenseNumber;
+            } else {
+                document.getElementById('step3Title').textContent = translations[lang].businessPasswordText;
+                document.querySelector('label[for="businessName"]').textContent = translations[lang].businessName;
+                document.querySelector('label[for="businessType"]').textContent = translations[lang].businessType;
+                document.querySelector('#businessType option[value=""]').textContent = translations[lang].selectBusinessType;
+            }
+
+            document.querySelector('label[for="password"]').textContent = translations[lang].password;
+            document.getElementById('minPasswordText').textContent = translations[lang].minPassword;
+            document.querySelector('label[for="confirmPassword"]').textContent = translations[lang].confirmPassword;
+            document.getElementById('createAccountButtonText').textContent = translations[lang].createAccount;
+            // Update the "Already have an account?" text
+            const alreadyAccountParagraph = document.querySelector('.text-center.text-gray-600.text-sm.mt-6');
+            if (alreadyAccountParagraph) {
+                alreadyAccountParagraph.innerHTML = `${translations[lang].alreadyHaveAccount} <a href="login.html" id="signInHereLink" class="text-blue-600 hover:text-blue-700 font-medium">${translations[lang].signInHere}</a>`;
+            }
+        }
+
+        // Function to show messages
+        function showMessage(message, type) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Helper function to handle user redirection based on role (copied from login logic) ---
+        async function handleUserRoleAndRedirect(user) {
+            if (!user) {
+                return;
+            }
+
+            // Check if user is an Admin
+            const adminDocRef = doc(db, "admins", user.uid);
+            const adminDocSnap = await getDoc(adminDocRef);
+
+            if (adminDocSnap.exists() && adminDocSnap.data().isAdmin === true) {
+                console.log("Admin user logged in. Redirecting to admin dashboard.");
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            // Check if user is a Driver or Sender/Customer
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData.isDriver) {
+                    console.log("Driver user logged in. Redirecting to driver dashboard.");
+                    localStorage.setItem('currentDriverId', user.uid);
+                    window.location.href = 'driver-dashboard.html';
+                    return;
+                } else {
+                    console.log("Sender/Customer logged in. Redirecting to sender dashboard.");
+                    window.location.href = 'sender-dashboard.html';
+                    return;
+                }
+            } else {
+                console.warn("User profile incomplete or not found in 'users' collection for UID:", user.uid);
+                // If user profile not found, create a basic one as a sender and redirect
+                try {
+                    await setDoc(doc(db, "users", user.uid), {
+                        email: user.email,
+                        isDriver: false, // Default to sender
+                        createdAt: serverTimestamp()
+                    });
+                    showMessage("Basic profile created. Redirecting to sender dashboard.", 'info');
+                    window.location.href = 'sender-dashboard.html';
+                } catch (error) {
+                    console.error("Error creating user profile:", error);
+                    showMessage('Error creating user profile. Please try again or contact support.', 'error');
+                    await auth.signOut(); // Sign out user if profile creation fails
+                }
+            }
+        }
+
+        // --- Check auth state on page load (redirect if already logged in with complete profile) ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // If user is already logged in, check if they have a complete profile
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        // Only redirect if user has complete profile data
+                        // The provided snippet checks for `userData.name && userData.email`.
+                        // We'll use this as the criteria for a "complete" profile for redirection on signup.
+                        if (userData.firstName && userData.email) { // Using firstName from our form
+                            await handleUserRoleAndRedirect(user);
+                        } else {
+                            console.log("User profile incomplete, allowing signup to continue.");
+                        }
+                    } else {
+                        // Also check if user is admin if their profile isn't in 'users'
+                        const adminDocRef = doc(db, "admins", user.uid);
+                        const adminDocSnap = await getDoc(adminDocRef);
+
+                        if (adminDocSnap.exists() && adminDocSnap.data().isAdmin === true) {
+                            window.location.href = 'admin-dashboard.html';
+                        } else {
+                            console.log("No user document found, allowing signup to continue.");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking user profile on page load:", error);
+                    // On error, allow signup to continue
+                }
+            }
+        });
+
+        // Set initial language from localStorage or default to English on page load
+        const savedLang = localStorage.getItem('fikaconnect_lang') || 'en';
+        updateUIText(savedLang);
+
+        // Function to update step indicators
+        function updateStepIndicators() {
+            document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+                if (index + 1 < currentStep) {
+                    indicator.classList.add('completed');
+                    indicator.classList.remove('active');
+                } else if (index + 1 === currentStep) {
+                    indicator.classList.add('active');
+                    indicator.classList.remove('completed');
+                } else {
+                    indicator.classList.remove('active', 'completed');
+                }
+            });
+        }
+
+        // Function to show a specific step
+        function showStep(stepNumber) {
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.classList.add('hidden');
+            });
+            document.getElementById(`step${stepNumber}`).classList.remove('hidden');
+            currentStep = stepNumber;
+            updateStepIndicators();
+
+            // Conditional display for Step 3 fields and driver info section
+            if (stepNumber === 3) {
+                if (userData.userType === 'transporter') {
+                    document.getElementById('transporterFields').classList.remove('hidden');
+                    document.getElementById('senderAdminFields').classList.add('hidden');
+                    document.getElementById('driverInfoSection').classList.add('active'); // Show driver info
+                    document.getElementById('step3Title').textContent = translations[localStorage.getItem('fikaconnect_lang') || 'en'].vehicleDetailsPasswordText;
+                } else {
+                    document.getElementById('transporterFields').classList.add('hidden');
+                    document.getElementById('senderAdminFields').classList.remove('hidden');
+                    document.getElementById('driverInfoSection').classList.remove('active'); // Hide driver info
+                    document.getElementById('step3Title').textContent = translations[localStorage.getItem('fikaconnect_lang') || 'en'].businessPasswordText;
+                }
+                // Ensure password inputs are cleared when navigating to step 3
+                document.getElementById('password').value = '';
+                document.getElementById('confirmPassword').value = '';
+                document.querySelector('.password-strength-fill').style.width = '0%'; // Reset strength indicator
+            }
+        }
+
+        // Initial display
+        showStep(1);
+
+        // Step 1: Role Selection
+        document.querySelectorAll('.card-option').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.card-option').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                userData.userType = card.dataset.role;
+                // Update Step 3 title immediately after user type selection
+                updateUIText(localStorage.getItem('fikaconnect_lang') || 'en');
+            });
+        });
+
+        document.getElementById('nextStep1').addEventListener('click', () => {
+            if (!userData.userType) {
+                showMessage(translations[localStorage.getItem('fikaconnect_lang') || 'en'].selectUserTypeMessage, 'error');
+                return;
+            }
+            showStep(2);
+        });
+
+        // Step 2: Personal Details
+        document.getElementById('backStep2').addEventListener('click', () => {
+            showStep(1);
+        });
+
+        document.getElementById('nextStep2').addEventListener('click', () => {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const district = document.getElementById('district').value;
+
+            if (!firstName || !lastName || !email || !phoneNumber || !district) {
+                showMessage('Please fill in all personal details.', 'error');
+                return;
+            }
+
+            // Basic email validation
+            if (!/\S+@\S+\.\S+/.test(email)) {
+                showMessage(translations[localStorage.getItem('fikaconnect_lang') || 'en'].invalidEmail, 'error');
+                return;
+            }
+
+            userData = { ...userData, firstName, lastName, email, phoneNumber, district };
+            showStep(3);
+        });
+
+        // Step 3: Conditional Details & Password
+        document.getElementById('backStep3').addEventListener('click', () => {
+            showStep(2);
+        });
+
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', () => {
+            const passwordField = document.getElementById('password');
+            const icon = document.getElementById('togglePassword').querySelector('i');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', () => {
+            const confirmPasswordField = document.getElementById('confirmPassword');
+            const icon = document.getElementById('toggleConfirmPassword').querySelector('i');
+            if (confirmPasswordField.type === 'password') {
+                confirmPasswordField.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                confirmPasswordField.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Password strength indicator logic (from your snippet)
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordStrengthFill = document.querySelector('.password-strength-fill');
+
+            if (passwordInput && passwordStrengthFill) {
+                passwordInput.addEventListener('input', function() {
+                    const password = passwordInput.value;
+                    let strength = 0;
+
+                    if (password.length >= 6) strength++;
+                    if (/[A-Z]/.test(password)) strength++;
+                    if (/[0-9]/.test(password)) strength++;
+                    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+                    passwordStrengthFill.className = 'password-strength-fill';
+                    if (strength <= 1) {
+                        passwordStrengthFill.classList.add('strength-weak');
+                    } else if (strength <= 3) {
+                        passwordStrengthFill.classList.add('strength-medium');
+                    } else {
+                        passwordStrengthFill.classList.add('strength-strong');
+                    }
+                });
+            }
+
+            // Confirm password validation (from your snippet)
+            if (confirmPasswordInput && passwordInput) {
+                confirmPasswordInput.addEventListener('input', function() {
+                    if (confirmPasswordInput.value !== passwordInput.value) {
+                        confirmPasswordInput.setCustomValidity("Passwords do not match");
+                    } else {
+                        confirmPasswordInput.setCustomValidity("");
+                    }
+                });
+            }
+        });
+
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const signupButton = document.getElementById('signupButton');
+            const buttonText = document.getElementById('createAccountButtonText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            // Final client-side validation
+            if (password !== confirmPassword) {
+                showMessage(translations[localStorage.getItem('fikaconnect_lang') || 'en'].passwordsDoNotMatch, 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showMessage(translations[localStorage.getItem('fikaconnect_lang') || 'en'].passwordTooWeak, 'error');
+                return;
+            }
+
+            // Collect conditional data based on userType and perform validation for those fields
+            if (userData.userType === 'transporter') {
+                const vehicleType = document.getElementById('vehicleType').value;
+                const vehicleRegistration = document.getElementById('vehicleRegistration').value.trim();
+                const licenseNumber = document.getElementById('licenseNumber').value.trim();
+
+                if (!vehicleType || !vehicleRegistration || !licenseNumber) {
+                    showMessage(translations[localStorage.getItem('fikaconnect_lang') || 'en'].fillVehicleDetails, 'error');
+                    return;
+                }
+                userData = { ...userData, vehicleType, vehicleRegistration, licenseNumber, isDriver: true };
+            } else if (userData.userType === 'sender') {
+                const businessName = document.getElementById('businessName').value.trim();
+                const businessType = document.getElementById('businessType').value;
+                userData = { ...userData, businessName, businessType, isDriver: false };
+            } else if (userData.userType === 'admin') {
+                const businessName = document.getElementById('businessName').value.trim(); // Admins might also have a business name
+                const businessType = document.getElementById('businessType').value;
+                userData = { ...userData, businessName, businessType, isAdmin: true };
+            }
+
+
+            // Show loading state
+            buttonText.textContent = translations[localStorage.getItem('fikaconnect_lang') || 'en'].signingUp;
+            loadingSpinner.classList.remove('hidden');
+            signupButton.disabled = true;
+            showMessage('', ''); // Clear previous messages
+
+            try {
+                // 1. Create user in Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
+                const user = userCredential.user;
+                console.log('User signed up:', user);
+
+                // 2. Store user data in Firestore based on role
+                if (userData.userType === 'admin') {
+                    await setDoc(doc(db, "admins", user.uid), {
+                        email: userData.email,
+                        isAdmin: true,
+                        firstName: userData.firstName,
+                        lastName: userData.lastName,
+                        phoneNumber: userData.phoneNumber,
+                        district: userData.district,
+                        businessName: userData.businessName || '', // Optional
+                        businessType: userData.businessType || '', // Optional
+                        createdAt: serverTimestamp()
+                    });
+                } else { // sender or transporter
+                    const dataToSave = {
+                        email: userData.email,
+                        firstName: userData.firstName,
+                        lastName: userData.lastName,
+                        phoneNumber: userData.phoneNumber,
+                        district: userData.district,
+                        createdAt: serverTimestamp(),
+                        isDriver: userData.isDriver // true for transporter, false for sender
+                    };
+
+                    if (userData.userType === 'transporter') {
+                        dataToSave.vehicleType = userData.vehicleType;
+                        dataToSave.vehicleRegistration = userData.vehicleRegistration;
+                        dataToSave.licenseNumber = userData.licenseNumber;
+                        dataToSave.status = "offline"; // Default status for drivers
+                        dataToSave.isApproved = false; // Requires admin approval
+                    } else { // sender
+                        dataToSave.businessName = userData.businessName || '';
+                        dataToSave.businessType = userData.businessType || '';
+                    }
+                    await setDoc(doc(db, "users", user.uid), dataToSave);
+                }
+
+                showMessage(translations[localStorage.getItem('fikaconnect_lang') || 'en'].accountCreatedSuccess, 'success');
+
+                // --- START: Your actual application logic after successful signup ---
+                console.log("Signup successful! Implementing post-signup application logic.");
+                // Redirect based on role, using the same logic as the login page
+                await handleUserRoleAndRedirect(user);
+                // --- END: Your actual application logic after successful signup ---
+
+            } catch (error) {
+                console.error('Sign up error:', error);
+                let errorMessage = translations[localStorage.getItem('fikaconnect_lang') || 'en'].unknownError;
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = translations[localStorage.getItem('fikaconnect_lang') || 'en'].emailInUse;
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = translations[localStorage.getItem('fikaconnect_lang') || 'en'].invalidEmail;
+                        break;
+                    case 'auth/operation-not-allowed':
+                        errorMessage = translations[localStorage.getItem('fikaconnect_lang') || 'en'].operationNotAllowed;
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = translations[localStorage.getItem('fikaconnect_lang') || 'en'].passwordTooWeak;
+                        break;
+                    default:
+                        errorMessage = `Sign up failed: ${error.message}`;
+                }
+                showMessage(errorMessage, 'error');
+            } finally {
+                // Reset button state
+                buttonText.textContent = translations[localStorage.getItem('fikaconnect_lang') || 'en'].createAccount;
+                loadingSpinner.classList.add('hidden');
+                signupButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

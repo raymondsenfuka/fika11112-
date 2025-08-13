@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Driver Dashboard | FikaConnect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+</head>
+<style>
+    :root {
+        --bg-light: #f8f9fa;
+        --bg-dark: #121212;
+        --text-light: #fff;
+        --text-dark: #222;
+        --primary: #28a745;
+        --primary-dark: #1e7e34;
+        --secondary: #6c757d;
+        --card-light: #ffffff;
+        --card-dark: #1e1e1e;
+        --status-pending: #ffc107;
+        --status-picked-up: #17a2b8;
+        --status-in-transit: #007bff;
+        --status-delivered: #28a745;
+        --status-cancelled: #dc3545;
+        --sidebar-width: 260px;
+        --header-height: 70px;
+        --transition: all 0.3s ease;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color: #f0f2f5;
+        color: var(--text-dark);
+        transition: var(--transition);
+        display: flex;
+        min-height: 100vh;
+    }
+    body.dark-mode {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+    }
+    .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-height);
+        background: var(--card-light);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1000;
+        transition: var(--transition);
+    }
+    .dark-mode .top-bar {
+        background: var(--card-dark);
+    }
+    .menu-toggle {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--primary);
+        cursor: pointer;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        transition: var(--transition);
+        z-index: 1001;
+    }
+    .menu-toggle:hover {
+        background: rgba(40, 167, 69, 0.1);
+    }
+    .logo {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: var(--primary);
+        text-decoration: none;
+    }
+    .logo i {
+        margin-right: 10px;
+        font-size: 1.6rem;
+    }
+    .user-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .theme-toggle {
+        background: transparent;
+        border: none;
+        font-size: 1.3rem;
+        cursor: pointer;
+        color: var(--primary);
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+    .theme-toggle:hover {
+        background: rgba(40, 167, 69, 0.1);
+    }
+    .language-selector {
+        position: relative;
+    }
+    .language-selector select {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        color: var(--primary);
+        padding: 8px 15px;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        transition: var(--transition);
+        min-width: 120px;
+    }
+    .language-selector select:hover {
+        background: rgba(40, 167, 69, 0.2);
+    }
+    .dark-mode .language-selector select {
+        background: rgba(40, 167, 69, 0.2);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 15px;
+        border-radius: 30px;
+        background: rgba(40, 167, 69, 0.1);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    .user-profile:hover {
+        background: rgba(40, 167, 69, 0.2);
+    }
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        background-size: cover;
+        background-position: center;
+    }
+    .user-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 70px;
+        height: 100vh;
+        background-color: var(--card-light);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        transition: width 0.3s ease;
+        z-index: 990;
+        overflow-x: hidden;
+    }
+    .dark-mode .sidebar {
+        background-color: var(--card-dark);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .sidebar:hover {
+        width: var(--sidebar-width);
+    }
+    .sidebar-header {
+        display: none;
+    }
+    .sidebar:hover .sidebar-header {
+        display: block;
+        padding: 20px 20px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 15px;
+    }
+    .sidebar:hover .sidebar-header h2 {
+        color: var(--primary);
+        margin-bottom: 5px;
+        font-size: 1.4rem;
+    }
+    .sidebar:hover .sidebar-header p {
+        font-size: 0.85rem;
+        color: var(--secondary);
+        margin: 0;
+    }
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        padding-top: 80px;
+    }
+    .sidebar:hover .sidebar-nav ul {
+        padding-top: 0;
+    }
+    .sidebar-nav a {
+        text-decoration: none;
+        color: inherit;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px 0;
+        transition: var(--transition);
+        position: relative;
+        white-space: nowrap;
+    }
+    .sidebar:hover .sidebar-nav a {
+        justify-content: flex-start;
+        padding: 12px 20px;
+    }
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--primary);
+    }
+    .sidebar-nav a.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: var(--primary);
+        border-radius: 0 4px 4px 0;
+    }
+    .sidebar-nav a i {
+        min-width: 24px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+    .sidebar-nav a span {
+        display: none;
+    }
+    .sidebar:hover .sidebar-nav a span {
+        display: inline;
+    }
+    .sidebar-footer {
+        margin-top: auto;
+        padding: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        display: none;
+    }
+    .sidebar:hover .sidebar-footer {
+        display: block;
+    }
+    .dark-mode .sidebar-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 15px;
+        background-color: #dc3545;
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .logout-btn:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        margin-left: 70px;
+        padding-top: calc(var(--header-height) + 20px);
+        padding-bottom: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
+        transition: margin-left 0.3s;
+    }
+    .sidebar:hover+.main-content {
+        margin-left: var(--sidebar-width);
+    }
+    /* Page specific styles */
+    .page-header {
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .page-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    .page-header h2 i {
+        color: var(--primary);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+    .dashboard-card {
+        background-color: var(--card-light);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: transform 0.2s;
+    }
+    .dark-mode .dashboard-card {
+        background-color: var(--card-dark);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }
+    .dashboard-card .icon-container {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(40, 167, 69, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--primary);
+    }
+    .dark-mode .dashboard-card .icon-container {
+        background-color: rgba(40, 167, 69, 0.2);
+    }
+    .card-content h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--secondary);
+    }
+    .dark-mode .card-content h3 {
+        color: #aaa;
+    }
+    .card-content p {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    /* Delivery List */
+    .delivery-list-container {
+        background-color: var(--card-light);
+        padding: 25px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+    .dark-mode .delivery-list-container {
+        background-color: var(--card-dark);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .delivery-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .dark-mode .delivery-list-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .delivery-list-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    .delivery-list-header a {
+        text-decoration: none;
+        color: var(--primary);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .delivery-list-header a:hover {
+        text-decoration: underline;
+    }
+    .delivery-card {
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: var(--bg-light);
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .dark-mode .delivery-card {
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background-color: var(--bg-dark);
+    }
+    .delivery-card .meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--secondary);
+    }
+    .delivery-card .meta .status {
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 5px;
+        color: white;
+    }
+    .status-Pending-Driver-Assignment { background-color: var(--status-pending); color: black; }
+    .status-Picked-Up { background-color: var(--status-picked-up); }
+    .status-In-Transit { background-color: var(--status-in-transit); }
+    .status-Delivered { background-color: var(--status-delivered); }
+    .status-Cancelled { background-color: var(--status-cancelled); }
+    .delivery-card h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--text-dark);
+    }
+    .dark-mode .delivery-card h4 {
+        color: var(--text-light);
+    }
+    .delivery-card p {
+        margin: 0;
+        color: var(--secondary);
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .action-buttons button {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .accept-btn { background-color: var(--primary); color: white; }
+    .accept-btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+    .reject-btn { background-color: #dc3545; color: white; }
+    .reject-btn:hover { background-color: #c82333; transform: translateY(-2px); }
+    .view-details-btn { background-color: #007bff; color: white; }
+    .view-details-btn:hover { background-color: #0069d9; transform: translateY(-2px); }
+
+    .no-deliveries-message {
+        text-align: center;
+        padding: 50px;
+        font-size: 1.2rem;
+        color: var(--secondary);
+    }
+    .page-footer {
+        text-align: center;
+        padding: 25px 0;
+        font-size: 0.95rem;
+        color: var(--secondary);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        margin-top: auto;
+    }
+    .dark-mode .page-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        color: #aaa;
+    }
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 800;
+    }
+    .overlay.active {
+        display: block;
+    }
+    /* Responsive Improvements */
+    @media (max-width: 991px) {
+        .sidebar {
+            width: var(--sidebar-width);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            top: 0;
+            height: 100%;
+            box-shadow: var(--shadow);
+        }
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        .sidebar:hover {
+            width: var(--sidebar-width);
+        }
+        .sidebar-nav ul {
+            padding-top: 80px;
+        }
+        .sidebar-header {
+            display: block;
+            padding: 20px;
+        }
+        .sidebar-nav a {
+            justify-content: flex-start;
+            padding: 12px 20px;
+        }
+        .sidebar-nav a span {
+            display: inline;
+        }
+        .main-content {
+            margin-left: 0;
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-top: calc(var(--header-height) + 15px);
+        }
+        .dashboard-grid {
+            gap: 15px;
+        }
+    }
+    @media (min-width: 992px) {
+        .menu-toggle {
+            display: none;
+        }
+        .overlay {
+            display: none !important;
+        }
+        .sidebar-nav ul {
+            padding-top: 80px;
+        }
+        .sidebar:hover .sidebar-nav ul {
+            padding-top: 0;
+        }
+        .sidebar-footer {
+            display: block;
+        }
+        .sidebar:not(:hover) .sidebar-footer {
+            display: none;
+        }
+    }
+    @media (max-width: 768px) {
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+        .user-name {
+            display: none;
+        }
+        .user-profile {
+            padding: 8px 12px;
+        }
+    }
+</style>
+<body>
+    <div class="overlay" id="overlay"></div>
+
+    <div class="top-bar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a href="driver-dashboard.html" class="logo">
+            <i class="fas fa-shipping-fast"></i> FikaConnect
+        </a>
+        <div class="user-actions">
+            <div class="language-selector">
+                <select id="languageSelector">
+                    <option value="en">English</option>
+                    <option value="lg">Luganda</option>
+                    <option value="sw">Kiswahili</option>
+                    <option value="fr">French</option>
+                </select>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar"></div>
+                <span class="user-name" id="userNameDisplay"></span>
+            </div>
+        </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>FikaConnect</h2>
+            <p>Driver Dashboard</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="driver-dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="driver-deliveries.html"><i class="fas fa-history"></i> <span>My Deliveries</span></a></li>
+                <li><a href="driver-profile.html"><i class="fas fa-user-circle"></i> <span>My Profile</span></a></li>
+                <li><a href="driver-settings.html"><i class="fas fa-cog"></i> <span>Settings</span></a></li>
+                <li><a href="contact-us.html"><i class="fas fa-headset"></i> <span>Contact Us</span></a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> <span>About Us</span></a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+        </div>
+    </aside>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h2><i class="fas fa-tachometer-alt"></i> Driver Dashboard</h2>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="icon-container"><i class="fas fa-map-marked-alt"></i></div>
+                <div class="card-content">
+                    <h3>Total Deliveries</h3>
+                    <p id="totalDeliveries">0</p>
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <div class="icon-container"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="card-content">
+                    <h3>Pending Payout</h3>
+                    <p id="pendingPayout">UGX 0</p>
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <div class="icon-container"><i class="fas fa-car-side"></i></div>
+                <div class="card-content">
+                    <h3>Deliveries in Transit</h3>
+                    <p id="deliveriesInTransit">0</p>
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <div class="icon-container"><i class="fas fa-hourglass-half"></i></div>
+                <div class="card-content">
+                    <h3>Pending Acceptance</h3>
+                    <p id="pendingAcceptance">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="delivery-list-container">
+            <div class="delivery-list-header">
+                <h3>New Deliveries Available</h3>
+                <a href="driver-deliveries.html">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="delivery-list" id="new-deliveries-list">
+                <p id="no-new-deliveries-message" class="no-deliveries-message">No new deliveries available at the moment.</p>
+            </div>
+        </div>
+        <footer class="page-footer">
+            <p>&copy; 2025 FikaConnect — Smart Logistics for East Africa</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDocs, getCountFromServer, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "492360448361",
+            appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // UI element references
+        const totalDeliveriesCount = document.getElementById('totalDeliveries');
+        const pendingPayoutAmount = document.getElementById('pendingPayout');
+        const deliveriesInTransitCount = document.getElementById('deliveriesInTransit');
+        const pendingAcceptanceCount = document.getElementById('pendingAcceptance');
+        const newDeliveriesList = document.getElementById('new-deliveries-list');
+        const noNewDeliveriesMessage = document.getElementById('no-new-deliveries-message');
+        const logoutBtnSidebar = document.getElementById('logoutBtnSidebar');
+        const userAvatar = document.getElementById('userAvatar');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const themeToggle = document.getElementById('themeToggle');
+
+        let CURRENT_DRIVER_ID = null;
+
+        // UI Event Listeners
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        });
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+
+        logoutBtnSidebar.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+            });
+        });
+
+        function renderNewDeliveryCard(doc) {
+            const data = doc.data();
+            const cardId = `new-delivery-card-${doc.id}`;
+            let card = document.getElementById(cardId);
+
+            if (!card) {
+                card = document.createElement("div");
+                card.id = cardId;
+                card.className = "delivery-card";
+                newDeliveriesList.prepend(card); // Add new cards to the top
+            }
+
+            const pickupInfo = data.deliveryType === 'direct' ? data.pickup.address : data.pickup.name;
+            const dropoffInfo = data.deliveryType === 'direct' ? data.dropoff.address : data.dropoff.name;
+            const driverPayout = data.fareDetails ? data.fareDetails.driverPayout.toLocaleString() : 'N/A';
+            
+            card.innerHTML = `
+                <div class="meta">
+                    <span>Booking ID: ${doc.id.substring(0, 8)}...</span>
+                    <div class="status status-Pending-Driver-Assignment">NEW</div>
+                </div>
+                <h4>Pickup: ${pickupInfo}</h4>
+                <p>Drop-off: ${dropoffInfo}</p>
+                <p><strong>Payout:</strong> UGX ${driverPayout}</p>
+                <p><strong>Package:</strong> ${data.package.description}</p>
+                <div class="action-buttons">
+                    <button class="accept-btn" data-booking-id="${doc.id}">Accept</button>
+                    <button class="reject-btn" data-booking-id="${doc.id}">Reject</button>
+                </div>
+            `;
+        }
+
+        // --- Firebase Data Fetching ---
+        function listenForDashboardUpdates(driverId) {
+            const deliveriesCollection = collection(db, "deliveries");
+
+            // Listener for new deliveries (status: "Pending Driver Assignment")
+            const newDeliveriesQuery = query(deliveriesCollection, where("status", "==", "Pending Driver Assignment"));
+            onSnapshot(newDeliveriesQuery, (snapshot) => {
+                const existingIds = new Set();
+                snapshot.forEach(doc => {
+                    existingIds.add(doc.id);
+                    renderNewDeliveryCard(doc);
+                });
+
+                // Remove cards that are no longer in the snapshot
+                newDeliveriesList.querySelectorAll('.delivery-card').forEach(card => {
+                    const cardId = card.id.split('-')[3];
+                    if (!existingIds.has(cardId)) {
+                        card.remove();
+                    }
+                });
+
+                if (snapshot.empty) {
+                    noNewDeliveriesMessage.style.display = 'block';
+                } else {
+                    noNewDeliveriesMessage.style.display = 'none';
+                }
+
+                pendingAcceptanceCount.textContent = snapshot.size;
+            }, err => {
+                console.error("Error listening for new deliveries:", err);
+            });
+
+            // Listener for driver-specific deliveries to update stats
+            const driverDeliveriesQuery = query(deliveriesCollection, where("driverId", "==", driverId));
+            onSnapshot(driverDeliveriesQuery, (snapshot) => {
+                let totalPayout = 0;
+                let inTransitCount = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.status === "Delivered") {
+                        totalPayout += data.fareDetails.driverPayout || 0;
+                    }
+                    if (data.status === "In Transit" || data.status === "Picked Up") {
+                        inTransitCount++;
+                    }
+                });
+
+                totalDeliveriesCount.textContent = snapshot.size;
+                pendingPayoutAmount.textContent = `UGX ${totalPayout.toLocaleString()}`;
+                deliveriesInTransitCount.textContent = inTransitCount;
+            }, err => {
+                console.error("Error listening for driver deliveries:", err);
+            });
+        }
+        
+        // Handle accept/reject actions
+        newDeliveriesList.addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button || !CURRENT_DRIVER_ID) return;
+
+            const bookingId = button.dataset.bookingId;
+            const bookingRef = doc(db, "deliveries", bookingId);
+
+            if (button.classList.contains('accept-btn')) {
+                try {
+                    await updateDoc(bookingRef, {
+                        status: 'Picked Up',
+                        driverId: CURRENT_DRIVER_ID,
+                        acceptedAt: new Date(),
+                    });
+                    console.log(`Booking ${bookingId} accepted by driver ${CURRENT_DRIVER_ID}`);
+                    alert('Booking accepted! Check your "My Deliveries" page.');
+                } catch (error) {
+                    console.error("Error accepting booking:", error);
+                    alert("Failed to accept booking. It may have been taken by another driver.");
+                }
+            } else if (button.classList.contains('reject-btn')) {
+                try {
+                    // Update the status to 'Rejected by Driver' to prevent it from showing up again
+                    // for this driver, but keep it available for others.
+                    // This is a simplified approach. In a real app, you might need a more complex
+                    // system to handle driver rejection lists.
+                    await updateDoc(bookingRef, {
+                        // For a simple implementation, we can just let another driver accept.
+                        // Or, in a more advanced system, update a `rejectedBy` array.
+                        // For now, no update is needed for a simple reject, as it just removes it from the UI.
+                    });
+                     // Simply remove the card from the UI
+                    const card = button.closest('.delivery-card');
+                    if (card) {
+                        card.remove();
+                    }
+                    console.log(`Booking ${bookingId} rejected by driver ${CURRENT_DRIVER_ID}`);
+                } catch (error) {
+                    console.error("Error rejecting booking:", error);
+                }
+            }
+        });
+
+        // Auth state listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                CURRENT_DRIVER_ID = user.uid;
+                
+                // --- MODIFIED CODE STARTS HERE ---
+                // Fetch driver profile from Firestore
+                const driverDocRef = doc(db, "drivers", CURRENT_DRIVER_ID);
+                const driverDocSnap = await getDoc(driverDocRef);
+
+                if (driverDocSnap.exists()) {
+                    const driverData = driverDocSnap.data();
+                    
+                    // Display the driver's name
+                    userNameDisplay.textContent = driverData.name || 'Driver';
+                    
+                    // Display the driver's profile picture or initial
+                    if (driverData.profilePictureUrl) {
+                        userAvatar.style.backgroundImage = `url(${driverData.profilePictureUrl})`;
+                        userAvatar.textContent = ''; // Clear the initial
+                        userAvatar.style.backgroundColor = 'transparent';
+                    } else {
+                        userAvatar.textContent = (driverData.name || 'D').charAt(0).toUpperCase();
+                        userAvatar.style.backgroundImage = 'none';
+                    }
+                } else {
+                    // Fallback if no Firestore profile is found
+                    userNameDisplay.textContent = 'Driver';
+                    userAvatar.textContent = (user.displayName || 'D').charAt(0).toUpperCase();
+                }
+                
+                // --- MODIFIED CODE ENDS HERE ---
+
+                listenForDashboardUpdates(CURRENT_DRIVER_ID);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html

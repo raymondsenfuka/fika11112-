@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Bookings Dashboard | FikaConnect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <style>
+        /* CSS Variables for Themes */
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #fff;
+            --text-primary: #222;
+            --text-secondary: #555;
+            --border-color: #e0e0e0;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --btn-primary-bg: #007bff;
+            --btn-primary-hover-bg: #0056b3;
+            --status-pending: #ffc107;
+            --status-picked-up: #17a2b8;
+            --status-in-transit: #007bff;
+            --status-delivered: #28a745;
+            --status-cancelled: #dc3545;
+            --status-paid: #28a745;
+            --status-unpaid: #dc3545;
+        }
+
+        [data-theme='dark'] {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-primary: #f8f9fa;
+            --text-secondary: #ccc;
+            --border-color: #333;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            --btn-primary-bg: #4c8bf5;
+            --btn-primary-hover-bg: #1c5fd6;
+        }
+
+        /* General Body and Layout */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            margin: 0;
+            padding: 0;
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Header and Actions */
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header-actions h1 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-actions .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: all 0.3s;
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            cursor: pointer;
+        }
+
+        .header-actions .btn-primary {
+            background-color: var(--btn-primary-bg);
+            color: #fff;
+            border: none;
+        }
+
+        .header-actions .btn-primary:hover {
+            background-color: var(--btn-primary-hover-bg);
+        }
+
+        .header-actions .theme-toggle-btn {
+            font-size: 1.2em;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .header-actions .language-select {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        /* Controls: Filter and Search */
+        .controls {
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls label {
+            font-weight: 500;
+            align-self: center;
+        }
+
+        .controls select, .controls input {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            min-width: 150px;
+            font-family: inherit;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Delivery Cards */
+        .deliveries-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            position: relative;
+        }
+
+        .delivery-card {
+            background-color: var(--bg-primary);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .delivery-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .status-badge.pending-driver-assignment { background-color: var(--status-pending); color: var(--text-dark); }
+        .status-badge.picked-up { background-color: var(--status-picked-up); }
+        .status-badge.in-transit { background-color: var(--status-in-transit); }
+        .status-badge.delivered { background-color: var(--status-delivered); }
+        .status-badge.cancelled { background-color: var(--status-cancelled); }
+        
+        .payment-status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .payment-status-badge.pending { background-color: var(--status-unpaid); }
+        .payment-status-badge.paid { background-color: var(--status-paid); }
+        .payment-status-badge.na { background-color: var(--text-secondary); color: var(--text-dark); }
+
+        .card-body p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-body p strong {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-right: 5px;
+        }
+
+        .card-body .icon {
+            color: var(--btn-primary-bg);
+            margin-right: 8px;
+            width: 15px;
+            text-align: center;
+        }
+        
+        .contact-info, .location-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .contact-info a, .location-info a {
+            padding: 5px 10px;
+            background-color: var(--btn-primary-bg);
+            color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+        
+        .contact-info a:hover, .location-info a:hover {
+            background-color: var(--btn-primary-hover-bg);
+        }
+
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-actions .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #fff;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .card-actions .btn-success { background-color: var(--status-delivered); }
+        .card-actions .btn-success:hover { background-color: #1e7e34; }
+
+        .card-actions .btn-info { background-color: var(--status-picked-up); }
+        .card-actions .btn-info:hover { background-color: #117a8b; }
+        
+        .card-actions .btn-primary { background-color: var(--btn-primary-bg); }
+        .card-actions .btn-primary:hover { background-color: var(--btn-primary-hover-bg); }
+
+        /* Custom Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-content .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--btn-primary-bg);
+        }
+        
+        .modal-content p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            color: #fff;
+        }
+
+        .modal-buttons .btn-confirm { background-color: var(--status-delivered); }
+        .modal-buttons .btn-confirm:hover { background-color: #1e7e34; }
+
+        .modal-buttons .btn-cancel { background-color: var(--text-secondary); color: #fff; }
+        .modal-buttons .btn-cancel:hover { background-color: #5a6268; }
+
+        /* Message Box */
+        #message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #message-box.success { background-color: var(--status-delivered); }
+        #message-box.error { background-color: var(--status-cancelled); }
+        #message-box.show { display: block; opacity: 1; }
+
+        /* Utility classes */
+        .text-center { text-align: center; }
+        .text-bold { font-weight: 600; }
+        
+        /* ========================================================== */
+        /* Loading Indicators */
+        /* ========================================================== */
+
+        /* Full page loading spinner */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.3s;
+        }
+
+        .loader {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--btn-primary-bg);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Loading state for buttons */
+        .btn.loading {
+            position: relative;
+            pointer-events: none;
+            color: transparent !important;
+            min-width: 120px; /* Prevent button from shrinking */
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Loading state for the deliveries list */
+        .deliveries-list.loading {
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* ========================================================== */
+        /* Responsive Design */
+        /* ========================================================== */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions .btn-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            
+            .controls select, .controls input {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .deliveries-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-header, .contact-info, .location-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .contact-info a, .location-info a {
+                width: 100%;
+                text-align: center;
+                margin-top: 5px;
+            }
+            
+            .card-actions {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-actions">
+            <h1 id="page-title">All Bookings</h1>
+            <div class="btn-group">
+                <a href="driver-dashboard.html" class="btn btn-primary"><i class="fas fa-arrow-left"></i> <span class="translatable" data-key="goBack">Go Back</span></a>
+                <select id="languageSelect" class="language-select">
+                    <option value="en">English</option>
+                    <option value="sw">Kiswahili</option>
+                    <option value="lg">Luganda</option>
+                    <option value="fr">French</option>
+                </select>
+                <button id="themeToggleBtn" class="btn theme-toggle-btn">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <label for="filterByStatus" class="translatable" data-key="filterByStatus">Filter by Status:</label>
+            <select id="filterByStatus">
+                <option value="all" class="translatable" data-key="all">All</option>
+                <option value="pending driver assignment" class="translatable" data-key="pendingDriverAssignment">Pending Driver Assignment</option>
+                <option value="picked up" class="translatable" data-key="pickedUp">Picked Up</option>
+                <option value="in transit" class="translatable" data-key="inTransit">In Transit</option>
+                <option value="delivered" class="translatable" data-key="delivered">Delivered</option>
+                <option value="cancelled" class="translatable" data-key="cancelled">Cancelled</option>
+            </select>
+            <input type="text" id="searchBookings" placeholder="Search by Booking ID, Sender, Recipient...">
+        </div>
+
+        <div class="deliveries-list" id="deliveriesList">
+            </div>
+
+        <p id="noDeliveriesMessage" class="text-center" style="display: none;"><span class="translatable" data-key="noDeliveriesFound">No deliveries found.</span></p>
+    </div>
+
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="hideModal('paymentModal')">×</span>
+            <h2 class="translatable" data-key="mobileMoneyPayment">Mobile Money Payment</h2>
+            <p><span class="translatable" data-key="toPayCommission">To pay the commission, send the amount to:</span></p>
+            <p class="text-bold">0706864020</p>
+            <p><span class="translatable" data-key="useBookingIdReference">Please use the Booking ID as the reference.</span></p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-primary" onclick="hideModal('paymentModal')"><span class="translatable" data-key="gotIt">Got it</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmPaymentModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="hideModal('confirmPaymentModal')">×</span>
+            <h2 class="translatable" data-key="confirmPaymentReceived">Confirm Payment Received</h2>
+            <p><span class="translatable" data-key="areYouSurePaid">Are you sure you want to mark this booking's commission as paid?</span></p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-confirm" id="confirmPaymentBtn"><span class="translatable" data-key="yesConfirm">Yes, Confirm</span></button>
+                <button type="button" class="btn btn-cancel" onclick="hideModal('confirmPaymentModal')"><span class="translatable" data-key="cancel">Cancel</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-box"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration and initialization
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "492360448361",
+            appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Translation data object
+        const translations = {
+            en: {
+                pageTitle: "All Bookings",
+                goBack: "Go Back",
+                filterByStatus: "Filter by Status:",
+                all: "All",
+                pendingDriverAssignment: "Pending Driver Assignment",
+                pickedUp: "Picked Up",
+                inTransit: "In Transit",
+                delivered: "Delivered",
+                cancelled: "Cancelled",
+                searchPlaceholder: "Search by Booking ID, Sender, Recipient...",
+                noDeliveriesFound: "No deliveries found.",
+                item: "Item:",
+                weight: "Weight:",
+                fragile: "Fragile:",
+                totalFare: "Total Fare:",
+                commission: "Commission:",
+                paymentMethod: "Payment Method:",
+                paymentStatus: "Payment Status:",
+                sender: "Sender:",
+                recipient: "Recipient:",
+                pickup: "Pickup:",
+                destination: "Destination:",
+                call: "Call",
+                navigate: "Navigate",
+                yes: "Yes",
+                no: "No",
+                pickUp: "Pick Up 🚚",
+                inTransitBtn: "In Transit 🛣️",
+                markAsDelivered: "Mark as Delivered 🎉",
+                confirmPayment: "Confirm Payment",
+                mobileMoneyPayment: "Mobile Money Payment",
+                toPayCommission: "To pay the commission, send the amount to:",
+                useBookingIdReference: "Please use the Booking ID as the reference.",
+                gotIt: "Got it",
+                confirmPaymentReceived: "Confirm Payment Received",
+                areYouSurePaid: "Are you sure you want to mark this booking's commission as paid?",
+                yesConfirm: "Yes, Confirm",
+                cancel: "Cancel",
+                bookingId: "Booking ID:",
+                bookingStatusUpdated: (bookingId, newStatus) => `Booking ${bookingId} status updated to ${newStatus}.`,
+                paymentStatusUpdated: (bookingId, newStatus) => `Payment status for booking ${bookingId} updated to ${newStatus}.`,
+                mustBeSignedIn: "You must be signed in to perform this action.",
+                errorUpdatingStatus: "An error occurred while updating status. Please try again.",
+                errorUpdatingPayment: "An error occurred while updating payment status. Please try again.",
+                errorFetchingDeliveries: "Failed to load deliveries. Please try again.",
+                authFailed: "Authentication failed. Please check your network."
+            },
+            sw: {
+                pageTitle: "Maagizo Yote",
+                goBack: "Rudi Nyuma",
+                filterByStatus: "Chuja kwa Hali:",
+                all: "Zote",
+                pendingDriverAssignment: "Inasubiri Dereva",
+                pickedUp: "Imechukuliwa",
+                inTransit: "Njiani",
+                delivered: "Imefikishwa",
+                cancelled: "Imeghairiwa",
+                searchPlaceholder: "Tafuta kwa Nambari ya Agizo, Mtumaji, Mpokeaji...",
+                noDeliveriesFound: "Hakuna maagizo yaliyopatikana.",
+                item: "Bidhaa:",
+                weight: "Uzito:",
+                fragile: "Inavunjika:",
+                totalFare: "Jumla ya Nauli:",
+                commission: "Tume:",
+                paymentMethod: "Njia ya Malipo:",
+                paymentStatus: "Hali ya Malipo:",
+                sender: "Mtumaji:",
+                recipient: "Mpokeaji:",
+                pickup: "Mahali pa Kuchukulia:",
+                destination: "Mahali pa Kufikisha:",
+                call: "Piga",
+                navigate: "Nenda",
+                yes: "Ndio",
+                no: "Hapana",
+                pickUp: "Chukua 🚚",
+                inTransitBtn: "Njiani 🛣️",
+                markAsDelivered: "Weka Kama Imefikishwa 🎉",
+                confirmPayment: "Thibitisha Malipo",
+                mobileMoneyPayment: "Malipo kwa Simu",
+                toPayCommission: "Ili kulipa tume, tuma kiasi kwa:",
+                useBookingIdReference: "Tafadhali tumia Nambari ya Agizo kama kumbukumbu.",
+                gotIt: "Nimeelewa",
+                confirmPaymentReceived: "Thibitisha Malipo Yamepokelewa",
+                areYouSurePaid: "Una uhakika unataka kuweka tume ya agizo hili kama imelipwa?",
+                yesConfirm: "Ndio, Thibitisha",
+                cancel: "Ghairi",
+                bookingId: "Nambari ya Agizo:",
+                bookingStatusUpdated: (bookingId, newStatus) => `Hali ya agizo ${bookingId} imesasishwa kuwa ${newStatus}.`,
+                paymentStatusUpdated: (bookingId, newStatus) => `Hali ya malipo ya agizo ${bookingId} imesasishwa kuwa ${newStatus}.`,
+                mustBeSignedIn: "Lazima uwe umeingia ili kufanya kitendo hiki.",
+                errorUpdatingStatus: "Kulitokea hitilafu wakati wa kusasisha hali. Tafadhali jaribu tena.",
+                errorUpdatingPayment: "Kulitokea hitilafu wakati wa kusasisha hali ya malipo. Tafadhali jaribu tena.",
+                errorFetchingDeliveries: "Imeshindwa kupakia maagizo. Tafadhali jaribu tena.",
+                authFailed: "Uthibitisho umeshindwa. Tafadhali angalia mtandao wako."
+            },
+            lg: {
+                pageTitle: "Ebimu Ku Bimu",
+                goBack: "Dda Enyuma",
+                filterByStatus: "Fiiroza ku Mbeera:",
+                all: "Byonna",
+                pendingDriverAssignment: "Ekyetaaga Dereeva",
+                pickedUp: "Ekyakiddwa",
+                inTransit: "Kiri mu Lugendo",
+                delivered: "Ekiweereddwa",
+                cancelled: "Ekyaziddwa",
+                searchPlaceholder: "Noonya ku Lwa Buki, Omuweereza, Omuwandiisi...",
+                noDeliveriesFound: "Tewali buki bwebakubira.",
+                item: "Ekikozesebwa:",
+                weight: "Obuzito:",
+                fragile: "Kikeetabise:",
+                totalFare: "Omuwendo Gwa Nawo:",
+                commission: "Kumisioni:",
+                paymentMethod: "Nkola ya Bya Lya:",
+                paymentStatus: "Mbeera ya Bya Lya:",
+                sender: "Omuweereza:",
+                recipient: "Omuwandiisi:",
+                pickup: "Ekifo kya Buki:",
+                destination: "Ekifo kya Kuno:",
+                call: "Kola",
+                navigate: "Genda",
+                yes: "Yee",
+                no: "Nedda",
+                pickUp: "Yaka 🚚",
+                inTransitBtn: "Kiri mu Lugendo 🛣️",
+                markAsDelivered: "Teekamu Nga Kiweereddwa 🎉",
+                confirmPayment: "Kola Bwa Lya",
+                mobileMoneyPayment: "Bya Lya ku Ssimu",
+                toPayCommission: "Omuwendo gwa kwewoza, tuma ku:",
+                useBookingIdReference: "Sooka kwewoza ku Lwa Buki nga owulira.",
+                gotIt: "Nnyize",
+                confirmPaymentReceived: "Kola Bwa Lya",
+                areYouSurePaid: "Omuwendo gwa kwewoza, tuma ku:",
+                yesConfirm: "Yee, Koza",
+                cancel: "Lekerawo",
+                bookingId: "Lwa Buki:",
+                bookingStatusUpdated: (bookingId, newStatus) => `Mbeera ya Buki ${bookingId} ekyaguddwa ku ${newStatus}.`,
+                paymentStatusUpdated: (bookingId, newStatus) => `Mbeera ya bya lya ku ${bookingId} ekyaguddwa ku ${newStatus}.`,
+                mustBeSignedIn: "Olinga okuba mu lwa Buki, okusobola okusindika.",
+                errorUpdatingStatus: "Okukola ekitundu ky'okusaanyawo, olinga okuba mu lwa Buki. Sooka olinga okwogera n'omuntu.",
+                errorUpdatingPayment: "Okukola ekitundu ky'okusaanyawo, olinga okuba mu lwa Buki. Sooka olinga okwogera n'omuntu.",
+                errorFetchingDeliveries: "Tewali maagizo ga kuwayo. Olinga okwogera n'omuntu.",
+                authFailed: "Okukola ekitundu ky'okusaanyawo, olinga okuba mu lwa Buki. Sooka olinga okwogera n'omuntu."
+            },
+            fr: {
+                pageTitle: "Toutes les Réservations",
+                goBack: "Retour",
+                filterByStatus: "Filtrer par Statut:",
+                all: "Tous",
+                pendingDriverAssignment: "En attente d'affectation",
+                pickedUp: "Récupéré",
+                inTransit: "En Transit",
+                delivered: "Livré",
+                cancelled: "Annulé",
+                searchPlaceholder: "Rechercher par N° de réservation, Expéditeur, Destinataire...",
+                noDeliveriesFound: "Aucune livraison trouvée.",
+                item: "Article:",
+                weight: "Poids:",
+                fragile: "Fragile:",
+                totalFare: "Tarif total:",
+                commission: "Commission:",
+                paymentMethod: "Méthode de paiement:",
+                paymentStatus: "Statut de paiement:",
+                sender: "Expéditeur:",
+                recipient: "Destinataire:",
+                pickup: "Lieu de ramassage:",
+                destination: "Destination:",
+                call: "Appeler",
+                navigate: "Naviguer",
+                yes: "Oui",
+                no: "Non",
+                pickUp: "Ramasser 🚚",
+                inTransitBtn: "En Transit 🛣️",
+                markAsDelivered: "Marquer comme livré 🎉",
+                confirmPayment: "Confirmer le paiement",
+                mobileMoneyPayment: "Paiement Mobile Money",
+                toPayCommission: "Pour payer la commission, envoyez le montant à:",
+                useBookingIdReference: "Veuillez utiliser l'ID de réservation comme référence.",
+                gotIt: "Compris",
+                confirmPaymentReceived: "Confirmer la réception du paiement",
+                areYouSurePaid: "Êtes-vous sûr de vouloir marquer la commission de cette réservation comme payée?",
+                yesConfirm: "Oui, Confirmer",
+                cancel: "Annuler",
+                bookingId: "N° de réservation:",
+                bookingStatusUpdated: (bookingId, newStatus) => `Statut de la réservation ${bookingId} mis à jour en ${newStatus}.`,
+                paymentStatusUpdated: (bookingId, newStatus) => `Statut de paiement de la réservation ${bookingId} mis à jour en ${newStatus}.`,
+                mustBeSignedIn: "Vous devez être connecté pour effectuer cette action.",
+                errorUpdatingStatus: "Une erreur est survenue lors de la mise à jour du statut. Veuillez réessayer.",
+                errorUpdatingPayment: "Une erreur est survenue lors de la mise à jour du statut de paiement. Veuillez réessayer.",
+                errorFetchingDeliveries: "Échec du chargement des livraisons. Veuillez réessayer.",
+                authFailed: "Échec de l'authentification. Veuillez vérifier votre connexion réseau."
+            }
+        };
+
+        // DOM Elements
+        const deliveriesList = document.getElementById('deliveriesList');
+        const filterByStatusSelect = document.getElementById('filterByStatus');
+        const searchBookingsInput = document.getElementById('searchBookings');
+        const noDeliveriesMessage = document.getElementById('noDeliveriesMessage');
+        const paymentModal = document.getElementById('paymentModal');
+        const confirmPaymentModal = document.getElementById('confirmPaymentModal');
+        const messageBox = document.getElementById('message-box');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = themeToggleBtn.querySelector('i');
+        const languageSelect = document.getElementById('languageSelect');
+        
+        // Global variable to store all deliveries fetched from Firestore
+        let allDeliveries = [];
+        let currentUserId = null;
+        let currentLanguage = localStorage.getItem('lang') || 'en';
+
+        /**
+         * Translates a string based on the current language.
+         * @param {string} key - The key for the translation.
+         * @param {Array} args - Optional arguments for dynamic strings.
+         */
+        function t(key, ...args) {
+            const lang = translations[currentLanguage] || translations.en;
+            const translation = lang[key] || translations.en[key] || key;
+            if (typeof translation === 'function') {
+                return translation(...args);
+            }
+            return translation;
+        }
+
+        /**
+         * Applies translations to all elements with the 'translatable' class.
+         */
+        function applyTranslations() {
+            document.getElementById('page-title').textContent = t('pageTitle');
+            document.getElementById('searchBookings').placeholder = t('searchPlaceholder');
+            document.querySelectorAll('.translatable').forEach(element => {
+                const key = element.dataset.key;
+                if (key) {
+                    element.textContent = t(key);
+                }
+            });
+
+            // Re-render the deliveries to apply translations to dynamic content
+            if (allDeliveries.length > 0) {
+                displayDeliveries(allDeliveries, filterByStatusSelect.value, searchBookingsInput.value.trim());
+            }
+        }
+
+        /**
+         * Shows a custom message box instead of using alert()
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error' to determine the styling.
+         */
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = `show ${type}`;
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        /**
+         * Shows a modal overlay.
+         * @param {string} modalId - The ID of the modal to show.
+         */
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        /**
+         * Hides a modal overlay.
+         * @param {string} modalId - The ID of the modal to hide.
+         */
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        /**
+         * Toggles the theme between light and dark.
+         */
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            themeIcon.className = `fas fa-${newTheme === 'dark' ? 'sun' : 'moon'}`;
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Initialize theme on page load
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            themeIcon.className = `fas fa-${savedTheme === 'dark' ? 'sun' : 'moon'}`;
+        })();
+        
+        // Initialize language on page load
+        (function initLanguage() {
+            languageSelect.value = currentLanguage;
+            applyTranslations();
+        })();
+
+        /**
+         * Displays the deliveries on the page based on the current filter and search term.
+         * @param {Array} deliveries - The array of delivery objects to display.
+         * @param {string} filterStatus - The status to filter by ('all', 'pending', etc.).
+         * @param {string} searchTerm - The search term to filter by.
+         */
+        function displayDeliveries(deliveries, filterStatus, searchTerm) {
+            deliveriesList.classList.remove('loading');
+            deliveriesList.innerHTML = ''; // Clear previous deliveries
+            
+            let filteredDeliveries;
+            if (filterStatus === 'all') {
+                filteredDeliveries = deliveries;
+            } else {
+                 filteredDeliveries = deliveries.filter(doc => doc.status.toLowerCase().replace(/ /g, '-') === filterStatus.toLowerCase().replace(/ /g, '-'));
+            }
+
+            if (searchTerm) {
+                const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                filteredDeliveries = filteredDeliveries.filter(doc =>
+                    doc.id.toLowerCase().includes(lowerCaseSearchTerm) ||
+                    (doc.senderDetails?.name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+                    (doc.recipientDetails?.name || '').toLowerCase().includes(lowerCaseSearchTerm)
+                );
+            }
+
+            if (filteredDeliveries.length === 0) {
+                noDeliveriesMessage.style.display = 'block';
+            } else {
+                noDeliveriesMessage.style.display = 'none';
+                filteredDeliveries.forEach(doc => {
+                    const bookingId = doc.id;
+                    const data = doc;
+                    const card = document.createElement('div');
+                    card.classList.add('delivery-card');
+
+                    // Map status to a class for styling
+                    const statusClass = data.status.toLowerCase().replace(/ /g, '-');
+                    const paymentStatus = data.paymentStatus?.toLowerCase() || 'na';
+                    const paymentStatusClass = paymentStatus.replace(/ /g, '-');
+                    
+                    let actionButton = '';
+                    const bookingStatus = data.status.toLowerCase();
+                    if (bookingStatus === 'pending driver assignment') {
+                        actionButton = `<button class="btn btn-info update-status-btn" data-booking-id="${bookingId}" data-new-status="Picked Up">${t('pickUp')}</button>`;
+                    } else if (bookingStatus === 'picked up') {
+                        actionButton = `<button class="btn btn-info update-status-btn" data-booking-id="${bookingId}" data-new-status="In Transit">${t('inTransitBtn')}</button>`;
+                    } else if (bookingStatus === 'in transit') {
+                        actionButton = `<button class="btn btn-success update-status-btn" data-booking-id="${bookingId}" data-new-status="Delivered">${t('markAsDelivered')}</button>`;
+                    } else if (bookingStatus === 'delivered' && paymentStatus !== 'paid') {
+                        actionButton = `<button class="btn btn-primary confirm-payment-btn" data-booking-id="${bookingId}">${t('confirmPayment')}</button>`;
+                    }
+
+                    // Extract all necessary data from the booking document
+                    const senderName = data.senderDetails?.name || data.sender?.name || 'N/A';
+                    const senderPhone = data.senderDetails?.phone || data.sender?.phone || '';
+                    const recipientName = data.recipientDetails?.name || data.recipient?.name || 'N/A';
+                    const recipientPhone = data.recipientDetails?.phone || data.recipient?.phone || '';
+                    const itemDescription = data.package?.description || 'N/A';
+                    const packageWeight = data.package?.weight || 'N/A';
+                    const isFragile = data.package?.fragile ? t('yes') : t('no');
+                    const pickupLocation = data.pickup?.address || data.pickup?.name || 'N/A';
+                    const destinationLocation = data.dropoff?.address || data.dropoff?.name || 'N/A';
+                    const totalFare = data.fareDetails?.totalFare?.toLocaleString() || 'N/A';
+                    const commission = data.fareDetails?.commission?.toLocaleString() || 'N/A';
+                    const paymentMethod = data.paymentMethod || 'N/A';
+
+                    const pickupLocationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupLocation)}`;
+                    const destinationLocationUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destinationLocation)}`;
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <h3>${t('bookingId')} <span class="text-bold">${bookingId}</span></h3>
+                            <span class="status-badge ${statusClass}">${t(statusClass.replace(/-/g, '')) || data.status}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><i class="fas fa-box-open icon"></i><strong>${t('item')}</strong> ${itemDescription}</p>
+                            <p><i class="fas fa-weight-hanging icon"></i><strong>${t('weight')}</strong> ${packageWeight} kg</p>
+                            <p><i class="fas fa-hand-holding-box icon"></i><strong>${t('fragile')}</strong> ${isFragile}</p>
+                            <p><i class="fas fa-money-bill-wave icon"></i><strong>${t('totalFare')}</strong> UGX ${totalFare}</p>
+                            <p><i class="fas fa-percentage icon"></i><strong>${t('commission')}</strong> UGX ${commission}</p>
+                            <p><i class="fas fa-credit-card icon"></i><strong>${t('paymentMethod')}</strong> ${paymentMethod}</p>
+                            <p><i class="fas fa-receipt icon"></i><strong>${t('paymentStatus')}</strong> <span class="payment-status-badge ${paymentStatusClass}">${t(paymentStatusClass.replace(/-/g, '')) || data.paymentStatus || 'N/A'}</span></p>
+
+                            <hr style="border-top: 1px solid var(--border-color); margin: 15px 0;">
+
+                            <div class="contact-info">
+                                <p><i class="fas fa-user-circle icon"></i><strong>${t('sender')}</strong> ${senderName}</p>
+                                ${senderPhone ? `<a href="tel:${senderPhone}"><i class="fas fa-phone"></i> ${t('call')}</a>` : ''}
+                            </div>
+                            <div class="location-info">
+                                <p><i class="fas fa-map-marker-alt icon"></i><strong>${t('pickup')}</strong> ${pickupLocation}</p>
+                                ${pickupLocation !== 'N/A' ? `<a href="${pickupLocationUrl}" target="_blank"><i class="fas fa-route"></i> ${t('navigate')}</a>` : ''}
+                            </div>
+                            <div class="contact-info">
+                                <p><i class="fas fa-user-circle icon"></i><strong>${t('recipient')}</strong> ${recipientName}</p>
+                                ${recipientPhone ? `<a href="tel:${recipientPhone}"><i class="fas fa-phone"></i> ${t('call')}</a>` : ''}
+                            </div>
+                            <div class="location-info">
+                                <p><i class="fas fa-map-marker-alt icon"></i><strong>${t('destination')}</strong> ${destinationLocation}</p>
+                                ${destinationLocation !== 'N/A' ? `<a href="${destinationLocationUrl}" target="_blank"><i class="fas fa-route"></i> ${t('navigate')}</a>` : ''}
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            ${actionButton}
+                        </div>
+                    `;
+                    deliveriesList.appendChild(card);
+                });
+            }
+        }
+
+        
+const driverId = localStorage.getItem("userId"); // driver logged in
+let activeBookingId = null; // set this when driver accepts a booking
+
+// Start location tracking after booking accepted
+function startLocationUpdates(bookingId) {
+    activeBookingId = bookingId;
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+    }
+
+    setInterval(() => {
+        navigator.geolocation.getCurrentPosition(pos => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            
+            firebase.database().ref(`driverLocations/${bookingId}`).set({
+                driverId: driverId,
+                lat: lat,
+                lng: lng,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+            console.log("Location updated:", lat, lng);
+        }, err => {
+            console.error("GPS error:", err);
+        });
+    }, 10000); // update every 10s
+}
+
+
+        
+        /**
+         * Sets up a real-time listener for all bookings.
+         */
+        function listenForBookings() {
+            deliveriesList.classList.add('loading');
+            const deliveriesCollection = collection(db, "deliveries");
+            
+            onSnapshot(deliveriesCollection, (querySnapshot) => {
+                allDeliveries = [];
+                querySnapshot.forEach((doc) => {
+                    allDeliveries.push({ id: doc.id, ...doc.data() });
+                });
+                displayDeliveries(allDeliveries, filterByStatusSelect.value, searchBookingsInput.value.trim());
+            }, (error) => {
+                deliveriesList.classList.remove('loading');
+                console.error("Error fetching deliveries: ", error);
+                showMessage(t('errorFetchingDeliveries'), 'error');
+            });
+        }
+        
+        /**
+         * Updates the status of a specific booking in Firestore.
+         * @param {string} bookingId - The ID of the booking to update.
+         * @param {string} newStatus - The new status to set.
+         * @param {HTMLElement} button - The button element that was clicked.
+         */
+        async function updateBookingStatus(bookingId, newStatus, button) {
+            if (!currentUserId) {
+                showMessage(t('mustBeSignedIn'), 'error');
+                return;
+            }
+            
+            button.classList.add('loading');
+            button.disabled = true;
+
+            try {
+                const docRef = doc(db, "deliveries", bookingId);
+                await updateDoc(docRef, {
+                    status: newStatus
+                });
+                showMessage(t('bookingStatusUpdated', bookingId, newStatus), 'success');
+            } catch (error) {
+                console.error("Error updating booking status:", error);
+                showMessage(t('errorUpdatingStatus'), 'error');
+            } finally {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+        
+        /**
+         * Updates the payment status of a specific booking in Firestore.
+         * @param {string} bookingId - The ID of the booking to update.
+         * @param {string} newStatus - The new payment status to set.
+         * @param {HTMLElement} button - The button element that was clicked.
+         */
+        async function updatePaymentStatus(bookingId, newStatus, button) {
+            if (!currentUserId) {
+                showMessage(t('mustBeSignedIn'), 'error');
+                return;
+            }
+
+            button.classList.add('loading');
+            button.disabled = true;
+
+            try {
+                const docRef = doc(db, "deliveries", bookingId);
+                await updateDoc(docRef, {
+                    paymentStatus: newStatus
+                });
+                showMessage(t('paymentStatusUpdated', bookingId, newStatus), 'success');
+                hideModal('confirmPaymentModal');
+            } catch (error) {
+                console.error("Error updating payment status:", error);
+                showMessage(t('errorUpdatingPayment'), 'error');
+            } finally {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // Event listener for the language selector
+        languageSelect.addEventListener('change', (e) => {
+            currentLanguage = e.target.value;
+            localStorage.setItem('lang', currentLanguage);
+            applyTranslations();
+        });
+
+        // Event listener for the filter dropdown
+        filterByStatusSelect.addEventListener('change', () => {
+            const selectedStatus = filterByStatusSelect.value;
+            const searchTerm = searchBookingsInput.value.trim();
+            displayDeliveries(allDeliveries, selectedStatus, searchTerm);
+        });
+
+        // Event listener for the search input
+        searchBookingsInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            const selectedStatus = filterByStatusSelect.value;
+            displayDeliveries(allDeliveries, selectedStatus, searchTerm);
+        });
+
+        // Event listener for the theme toggle button
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+
+        // Event listener for dynamically created buttons (using event delegation)
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.update-status-btn')) {
+                const button = e.target.closest('.update-status-btn');
+                const bookingId = button.dataset.bookingId;
+                const newStatus = button.dataset.newStatus;
+                await updateBookingStatus(bookingId, newStatus, button);
+            } else if (e.target.closest('.confirm-payment-btn')) {
+                const button = e.target.closest('.confirm-payment-btn');
+                const bookingId = button.dataset.bookingId;
+                document.getElementById('confirmPaymentBtn').dataset.bookingId = bookingId;
+                showModal('confirmPaymentModal');
+            }
+        });
+
+        // Event listener for the "Confirm Payment" button inside its modal
+        document.getElementById('confirmPaymentBtn').addEventListener('click', async (e) => {
+            const button = e.target.closest('.btn');
+            const bookingId = e.target.dataset.bookingId;
+            await updatePaymentStatus(bookingId, 'Paid', button);
+        });
+
+        // Auth state listener to initialize the app
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                listenForBookings();
+            } else {
+                // If no user is signed in, try to sign in anonymously
+                try {
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    showMessage(t('authFailed'), 'error');
+                }
+            }
+        });
+
+
+
+    </script>
+</body>
+</html>

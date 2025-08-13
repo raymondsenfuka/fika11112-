@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Bookings Dashboard | FikaConnect</title>
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-dark: #121212;
+            --text-light: #fff;
+            --text-dark: #222;
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+        }
+
+        /* General Body and Layout */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header and Actions */
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header-actions h1 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .header-actions .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .header-actions .btn-primary {
+            background-color: var(--primary);
+        }
+
+        .header-actions .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Controls: Filter and Search */
+        .controls {
+            display: flex;
+            justify-content: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .controls label {
+            font-weight: 500;
+            align-self: center;
+        }
+
+        .controls select, .controls input {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            min-width: 150px;
+            font-family: inherit;
+        }
+
+        /* Delivery Cards */
+        .deliveries-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .delivery-card {
+            background-color: var(--bg-light);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .delivery-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        .status-badge.pending-driver-assignment { background-color: var(--warning); }
+        .status-badge.picked-up { background-color: var(--info); }
+        .status-badge.in-transit { background-color: var(--primary); }
+        .status-badge.delivered { background-color: var(--success); }
+        .status-badge.cancelled { background-color: var(--danger); }
+
+        .card-body p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: var(--text-dark);
+        }
+        
+        .card-body p strong {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .card-actions .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .card-actions .btn-primary { background-color: var(--primary); color: var(--text-light); }
+        .card-actions .btn-primary:hover { background-color: #0056b3; }
+        
+        .card-actions .btn-success { background-color: var(--success); color: var(--text-light); }
+        .card-actions .btn-success:hover { background-color: #1e7e34; }
+
+
+        /* Custom Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+        
+        .modal-content p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-content label {
+            font-weight: 500;
+            text-align: left;
+        }
+        
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .modal-buttons .btn-confirm { background-color: var(--success); color: var(--text-light); }
+        .modal-buttons .btn-confirm:hover { background-color: #1e7e34; }
+
+        .modal-buttons .btn-cancel { background-color: var(--secondary); color: var(--text-light); }
+        .modal-buttons .btn-cancel:hover { background-color: #5a6268; }
+
+        /* Message Box */
+        #message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: var(--text-light);
+            font-weight: 500;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #message-box.success { background-color: var(--success); }
+        #message-box.error { background-color: var(--danger); }
+        #message-box.show { display: block; opacity: 1; }
+
+        /* Utility classes */
+        .text-center { text-align: center; }
+        .text-bold { font-weight: 600; }
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-actions">
+            <h1>All Bookings</h1>
+            <a href="index.html" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Go Back</a>
+        </div>
+
+        <!-- Controls: Filter and Sort -->
+        <div class="controls">
+            <label for="filterByStatus">Filter by Status:</label>
+            <select id="filterByStatus">
+                <option value="all">All</option>
+                <option value="pending driver assignment">Pending Driver Assignment</option>
+                <option value="picked up">Picked Up</option>
+                <option value="in transit">In Transit</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+
+        <!-- Deliveries List -->
+        <div class="deliveries-list" id="deliveriesList">
+            <!-- Delivery cards will be dynamically added here -->
+        </div>
+
+        <!-- No Deliveries Message -->
+        <p id="noDeliveriesMessage" class="text-center" style="display: none;">No deliveries found.</p>
+    </div>
+
+    <!-- Custom Modals -->
+    <!-- Update Status Modal -->
+    <div id="updateStatusModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Update Booking Status</h2>
+            <form id="updateStatusForm">
+                <input type="hidden" id="modalBookingId">
+                <label for="modalStatusSelect">Select new status:</label>
+                <select id="modalStatusSelect">
+                    <option value="Pending Driver Assignment">Pending Driver Assignment</option>
+                    <option value="Picked Up">Picked Up</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-confirm">Confirm</button>
+                    <button type="button" class="btn btn-cancel" onclick="hideModal('updateStatusModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Mobile Money Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Mobile Money Payment</h2>
+            <p>To pay the commission, send the amount to:</p>
+            <p class="text-bold">0706864020</p>
+            <p>Please use the Booking ID as the reference.</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-primary" onclick="hideModal('paymentModal')">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box -->
+    <div id="message-box"></div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase configuration and initialization
+        const appId = "fika-connect-5f844";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "492360448361",
+            appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // DOM Elements
+        const deliveriesList = document.getElementById('deliveriesList');
+        const filterByStatusSelect = document.getElementById('filterByStatus');
+        const noDeliveriesMessage = document.getElementById('noDeliveriesMessage');
+        const updateStatusModal = document.getElementById('updateStatusModal');
+        const paymentModal = document.getElementById('paymentModal');
+        const modalStatusSelect = document.getElementById('modalStatusSelect');
+        const modalBookingId = document.getElementById('modalBookingId');
+        const updateStatusForm = document.getElementById('updateStatusForm');
+        const messageBox = document.getElementById('message-box');
+
+        // Global variable to store all deliveries fetched from Firestore
+        let allDeliveries = [];
+        let currentUserId = null;
+
+        /**
+         * Shows a custom message box instead of using alert()
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error' to determine the styling.
+         */
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = `show ${type}`;
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        }
+
+        /**
+         * Shows a modal overlay.
+         * @param {string} modalId - The ID of the modal to show.
+         */
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        /**
+         * Hides a modal overlay.
+         * @param {string} modalId - The ID of the modal to hide.
+         */
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        /**
+         * Displays the deliveries on the page based on the current filter.
+         * @param {Array} deliveries - The array of delivery objects to display.
+         * @param {string} filterStatus - The status to filter by ('all', 'pending', etc.).
+         */
+        function displayDeliveries(deliveries, filterStatus) {
+            deliveriesList.innerHTML = ''; // Clear previous deliveries
+            
+            let filteredDeliveries;
+            if (filterStatus === 'all') {
+                filteredDeliveries = deliveries;
+            } else {
+                 filteredDeliveries = deliveries.filter(doc => doc.status.toLowerCase().replace(' ', '-') === filterStatus.toLowerCase().replace(' ', '-'));
+            }
+
+            if (filteredDeliveries.length === 0) {
+                noDeliveriesMessage.style.display = 'block';
+            } else {
+                noDeliveriesMessage.style.display = 'none';
+                filteredDeliveries.forEach(doc => {
+                    const bookingId = doc.id;
+                    const data = doc;
+                    const card = document.createElement('div');
+                    card.classList.add('delivery-card');
+
+                    // Map status to a class for styling
+                    const statusClass = data.status.toLowerCase().replace(' ', '-');
+
+                    // Extract all necessary data from the booking document
+                    const senderName = data.senderDetails?.name || data.sender?.name || 'N/A';
+                    const recipientName = data.recipientDetails?.name || data.recipient?.name || 'N/A';
+                    const recipientPhone = data.recipientDetails?.phone || data.recipient?.phone || 'N/A';
+                    const itemDescription = data.package?.description || 'N/A';
+                    const packageWeight = data.package?.weight || 'N/A';
+                    const isFragile = data.package?.fragile ? 'Yes' : 'No';
+                    const pickupLocation = data.pickup?.address || data.pickup?.name || 'N/A';
+                    const destinationLocation = data.dropoff?.address || data.dropoff?.name || 'N/A';
+                    const totalFare = data.fareDetails?.totalFare?.toLocaleString() || 'N/A';
+                    const commission = data.fareDetails?.commission?.toLocaleString() || 'N/A';
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <h3>Booking ID: <span class="text-bold">${bookingId}</span></h3>
+                            <span class="status-badge ${statusClass}">${data.status}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Sender:</strong> ${senderName}</p>
+                            <p><strong>Recipient:</strong> ${recipientName}</p>
+                            <p><strong>Recipient Phone:</strong> ${recipientPhone}</p>
+                            <p><strong>Item:</strong> ${itemDescription}</p>
+                            <p><strong>Weight:</strong> ${packageWeight} kg</p>
+                            <p><strong>Fragile:</strong> ${isFragile}</p>
+                            <p><strong>Pickup:</strong> ${pickupLocation}</p>
+                            <p><strong>Destination:</strong> ${destinationLocation}</p>
+                            <p><strong>Total Fare:</strong> UGX ${totalFare}</p>
+                            <p><strong>Commission:</strong> UGX ${commission}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-primary update-status-btn" data-booking-id="${bookingId}">Update Status</button>
+                            <button class="btn btn-success pay-mobile-money-btn" data-booking-id="${bookingId}">Pay via Mobile Money</button>
+                        </div>
+                    `;
+                    deliveriesList.appendChild(card);
+                });
+            }
+        }
+
+        /**
+         * Sets up a real-time listener for all bookings.
+         */
+        function listenForBookings() {
+            const deliveriesCollection = collection(db, "deliveries");
+            
+            onSnapshot(deliveriesCollection, (querySnapshot) => {
+                allDeliveries = [];
+                querySnapshot.forEach((doc) => {
+                    allDeliveries.push({ id: doc.id, ...doc.data() });
+                });
+                displayDeliveries(allDeliveries, filterByStatusSelect.value);
+            }, (error) => {
+                console.error("Error fetching deliveries: ", error);
+                showMessage("Failed to load deliveries. Please try again.", 'error');
+            });
+        }
+        
+        /**
+         * Updates the status of a specific booking in Firestore.
+         * @param {string} bookingId - The ID of the booking to update.
+         * @param {string} newStatus - The new status to set.
+         */
+        async function updateBookingStatus(bookingId, newStatus) {
+            if (!currentUserId) {
+                showMessage("You must be signed in to perform this action.", 'error');
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "deliveries", bookingId);
+                await updateDoc(docRef, {
+                    status: newStatus
+                });
+                showMessage(`Booking ${bookingId} status updated to ${newStatus}.`, 'success');
+            } catch (error) {
+                console.error("Error updating booking status:", error);
+                showMessage("An error occurred while updating status. Please try again.", 'error');
+            }
+        }
+
+        // Event listener for the filter dropdown
+        filterByStatusSelect.addEventListener('change', () => {
+            const selectedStatus = filterByStatusSelect.value;
+            displayDeliveries(allDeliveries, selectedStatus);
+        });
+
+        // Event listener for dynamically created buttons (using event delegation)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('update-status-btn')) {
+                const bookingId = e.target.dataset.bookingId;
+                const delivery = allDeliveries.find(d => d.id === bookingId);
+                if (delivery) {
+                    modalBookingId.value = bookingId;
+                    modalStatusSelect.value = delivery.status;
+                    showModal('updateStatusModal');
+                }
+            } else if (e.target.classList.contains('pay-mobile-money-btn')) {
+                showModal('paymentModal');
+            }
+        });
+        
+        // Event listener for the modal form submission
+        updateStatusForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bookingId = modalBookingId.value;
+            const newStatus = modalStatusSelect.value;
+            await updateBookingStatus(bookingId, newStatus);
+            hideModal('updateStatusModal');
+        });
+
+        // Auth state listener to initialize the app
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                listenForBookings();
+            } else {
+                // If no user is signed in, try to sign in anonymously
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    showMessage("Authentication failed. Please check your network.", 'error');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

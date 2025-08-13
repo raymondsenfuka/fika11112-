@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FikaConnect - Sender Dashboard</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-uMn0N7ZfWjwwRstGZV5Jt0Br9aXmfDdBWPHdHVyvv/E="
+    crossorigin=""
+  />
+
+  <!-- Custom Styles (optional) -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+    }
+    #deliveryPanel {
+      display: none;
+      padding: 20px;
+      background: #f0f0f0;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Sender Dashboard - FikaConnect</h1>
+
+  <!-- Map Container -->
+  <div id="map"></div>
+
+  <!-- Delivery Panel -->
+  <div id="deliveryPanel">
+    <h3>Delivery Tracking Panel</h3>
+    <p>This section will show delivery status and estimated arrival time.</p>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-pMfZ7g6Rz37bSyFAi8WokxzwHXUPrW0wFgj6sZJ2z24="
+    crossorigin=""
+  ></script>
+
+  <!-- Main JavaScript -->
+  <script>
+    // Initialize Leaflet Map
+    var map = L.map('map').setView([0.3476, 32.5825], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(map);
+
+    // Example marker (Kampala)
+    var marker = L.marker([0.3476, 32.5825]).addTo(map);
+    marker.bindPopup("<b>Welcome to FikaConnect!</b>").openPopup();
+
+    // Show delivery panel safely
+    const deliveryPanel = document.getElementById("deliveryPanel");
+    if (deliveryPanel) {
+      deliveryPanel.style.display = "block";
+    } else {
+      console.warn("deliveryPanel element not found.");
+    }
+  </script>
+</body>
+</html>

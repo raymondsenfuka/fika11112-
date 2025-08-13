@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Track Delivery - FikaConnect</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    h2 { background: #222; color: white; padding: 10px; margin: 0; }
+    #trackingForm { padding: 10px; background: #f4f4f4; }
+    input, button { padding: 8px; margin-right: 5px; }
+    button { background: green; color: white; border: none; cursor: pointer; }
+    #map { height: calc(100vh - 100px); }
+</style>
+</head>
+<body>
+
+<h2>Track Your Delivery</h2>
+
+<div id="trackingForm">
+    <input type="text" id="bookingId" placeholder="Enter Tracking ID">
+    <button onclick="startTracking()">Start Tracking</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyAqHX39xTBqnu47exoR9-xWftDMyKHWYFo",
+        authDomain: "fika-connect-5f844.firebaseapp.com",
+        projectId: "fika-connect-5f844",
+        databaseURL: "https://fika-connect-5f844-default-rtdb.firebaseio.com",
+        storageBucket: "fika-connect-5f844.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const rtdb = firebase.database();
+
+    let map, truckMarker, pickupMarker, dropoffMarker, routeLine;
+
+    function initMap() {
+        map = L.map("map").setView([0, 0], 13);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+    }
+
+    async function startTracking() {
+        const bookingId = document.getElementById("bookingId").value.trim();
+        if (!bookingId) {
+            alert("Please enter a Tracking ID");
+            return;
+        }
+
+        // Fetch booking details from Firestore
+        const doc = await db.collection("bookings").doc(bookingId).get();
+        if (!doc.exists) {
+            alert("Booking not found!");
+            return;
+        }
+
+        const booking = doc.data();
+
+        // Add pickup & drop-off markers
+        if (pickupMarker) map.removeLayer(pickupMarker);
+        if (dropoffMarker) map.removeLayer(dropoffMarker);
+        pickupMarker = L.marker([booking.pickup.lat, booking.pickup.lng]).addTo(map).bindPopup("Pickup");
+        dropoffMarker = L.marker([booking.dropoff.lat, booking.dropoff.lng]).addTo(map).bindPopup("Drop-off");
+
+        // Draw straight route
+        if (routeLine) map.removeLayer(routeLine);
+        routeLine = L.polyline([
+            [booking.pickup.lat, booking.pickup.lng],
+            [booking.dropoff.lat, booking.dropoff.lng]
+        ], { color: "blue", weight: 4 }).addTo(map);
+        map.fitBounds(routeLine.getBounds());
+
+        // Truck icon
+        const truckIcon = L.icon({
+            iconUrl: "https://cdn-icons-png.flaticon.com/512/1995/1995470.png",
+            iconSize: [40, 40]
+        });
+
+        if (truckMarker) map.removeLayer(truckMarker);
+        truckMarker = L.marker([booking.pickup.lat, booking.pickup.lng], { icon: truckIcon }).addTo(map);
+
+        // Listen to RTDB for live location updates
+        rtdb.ref(`tracking/${bookingId}`).on("value", snapshot => {
+            const data = snapshot.val();
+            if (data) {
+                truckMarker.setLatLng([data.lat, data.lng]);
+                map.setView([data.lat, data.lng], 14);
+            }
+        });
+    }
+
+    initMap();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings | FikaConnect Driver</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f0fdf4;
+      --text: #111827;
+      --card-bg: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111827;
+      --text: #f9fafb;
+      --card-bg: #1f2937;
+    }
+
+    body {
+      margin: 0;
+      padding: 1rem;
+      background: var(--bg);
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+      transition: all 0.3s ease;
+    }
+
+    h2 {
+      text-align: center;
+      color: #10b981;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      max-width: 600px;
+      background: var(--card-bg);
+      margin: auto;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    label {
+      display: block;
+      margin: 1rem 0 0.3rem;
+      font-weight: 600;
+    }
+
+    select, input[type="text"], input[type="email"], button {
+      width: 100%;
+      padding: 0.7rem;
+      margin-bottom: 1rem;
+      border-radius: 0.6rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .toggle input[type="checkbox"] {
+      margin-right: 0.6rem;
+      transform: scale(1.2);
+    }
+
+    button {
+      background: #047857;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .logout {
+      background: #ef4444;
+      margin-top: 1rem;
+    }
+
+    footer {
+      margin-top: 2rem;
+      text-align: center;
+      color: #047857;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h2>⚙️ Driver Settings</h2>
+<div class="card">
+  <label for="langSelect">🌐 Preferred Language</label>
+  <select id="langSelect">
+    <option value="en">English</option>
+    <option value="lg">Luganda</option>
+    <option value="rn">Runyankore</option>
+    <option value="sw">Swahili</option>
+  </select>
+
+  <div class="toggle">
+    <input type="checkbox" id="darkToggle"/>
+    <label for="darkToggle">🌙 Enable Dark Mode</label>
+  </div>
+
+  <label>Email (Read Only)</label>
+  <input type="email" id="driverEmail" disabled placeholder="Loading..." />
+
+  <label>Name</label>
+  <input type="text" id="driverName" placeholder="Enter name" />
+
+  <button onclick="saveSettings()">💾 Save Preferences</button>
+  <button class="logout" onclick="logout()">🚪 Log Out</button>
+</div>
+
+<footer>🔧 Powered by Ssenfuka Tech Solutions</footer>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+    authDomain: "fika-connect-5f844.firebaseapp.com",
+    projectId: "fika-connect-5f844",
+    storageBucket: "fika-connect-5f844.appspot.com",
+    messagingSenderId: "124223307329",
+    appId: "1:124223307329:web:76c547b91dcd25205550c0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const darkToggle = document.getElementById("darkToggle");
+  const langSelect = document.getElementById("langSelect");
+
+  // Load saved settings
+  const savedLang = localStorage.getItem("lang");
+  const savedTheme = localStorage.getItem("theme");
+  if (savedLang) langSelect.value = savedLang;
+  if (savedTheme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    darkToggle.checked = true;
+  }
+
+  function saveSettings() {
+    const lang = langSelect.value;
+    const isDark = darkToggle.checked;
+    const name = document.getElementById("driverName").value.trim();
+
+    localStorage.setItem("lang", lang);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+
+    if (isDark) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+
+    // Update driver name if authenticated
+    const user = auth.currentUser;
+    if (user && name !== "") {
+      updateProfile(user, { displayName: name })
+        .then(() => alert("✅ Settings & name updated"))
+        .catch(err => console.error("Update failed", err));
+    } else {
+      alert("✅ Settings saved!");
+    }
+  }
+
+  function logout() {
+    signOut(auth).then(() => {
+      alert("🚪 Logged out.");
+      window.location.href = "login.html";
+    });
+  }
+
+  // Populate auth data
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById("driverEmail").value = user.email;
+      document.getElementById("driverName").value = user.displayName || "";
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
+</body>
+</html>

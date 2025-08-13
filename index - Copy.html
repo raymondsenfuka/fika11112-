@@ -1,0 +1,348 @@
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, updateDoc, collection, query, where, onSnapshot, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "492360448361",
+            appId: "1:492360448361:web:4ab28b2b9828371d4b2f4a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- DOM Elements ---
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const navProfile = document.getElementById('navProfile');
+        const body = document.body;
+
+        const availableBookingsList = document.getElementById('availableBookingsList');
+        const availableBookingsLoading = document.getElementById('availableBookingsLoading');
+        const noAvailableBookingsMessage = document.getElementById('noAvailableBookingsMessage');
+        const availableBookingsOffDutyMessage = document.getElementById('availableBookingsOffDutyMessage');
+        const availableBookingsError = document.getElementById('availableBookingsError');
+        const availableBookingsMapCard = document.getElementById('availableBookingsMapCard');
+        const availableBookingsListCard = document.getElementById('availableBookingsListCard');
+        
+        const assignedDeliveriesListCard = document.getElementById('assignedDeliveriesListCard');
+        const assignedDeliveriesList = document.getElementById('assignedDeliveriesList');
+        const assignedDeliveriesLoading = document.getElementById('assignedDeliveriesLoading');
+        const noAssignedDeliveriesMessage = document.getElementById('noAssignedDeliveriesMessage');
+        const assignedDeliveriesError = document.getElementById('assignedDeliveriesError');
+
+        const completedDeliveriesCard = document.getElementById('completedDeliveriesCard');
+        const completedDeliveriesList = document.getElementById('completedDeliveriesList');
+        const completedDeliveriesLoading = document.getElementById('completedDeliveriesLoading');
+        const noCompletedDeliveriesMessage = document.getElementById('noCompletedDeliveriesMessage');
+        const completedDeliveriesError = document.getElementById('completedDeliveriesError');
+        const totalDeliveriesElement = document.getElementById('totalDeliveries');
+        const totalEarningsElement = document.getElementById('totalEarnings');
+
+        const availabilityToggleBtn = document.getElementById('availabilityToggleBtn');
+
+        const customModal = document.getElementById('customModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        
+        const mapNavigationCard = document.getElementById('mapNavigationCard');
+        const navigationMapContainer = document.getElementById('navigationMap');
+        const backToBookingsBtn = document.getElementById('backToBookingsBtn');
+
+        let map;
+        let CURRENT_DRIVER_ID = null;
+        let driverIsOnDuty = false;
+        let availableBookingsUnsubscribe = null;
+        let assignedDeliveriesUnsubscribe = null;
+        let completedDeliveriesUnsubscribe = null;
+        let driverProfileUnsubscribe = null;
+
+        // --- UI & Event Handlers ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                body.classList.add('dark-mode');
+                updateThemeIcons();
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+
+            if (navProfile) {
+                navProfile.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    navProfile.classList.toggle('active');
+                });
+            }
+            
+            document.addEventListener('click', (event) => {
+                if (navProfile && navProfile.classList.contains('active') && !navProfile.contains(event.target)) {
+                    navProfile.classList.remove('active');
+                }
+            });
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                });
+            }
+
+            availabilityToggleBtn.addEventListener('click', toggleDriverAvailability);
+            backToBookingsBtn.addEventListener('click', stopNavigation);
+        });
+
+        function toggleTheme() {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons();
+        }
+
+        function updateThemeIcons() {
+            const isDark = body.classList.contains('dark-mode');
+            if (themeToggle) {
+                const icon = themeToggle.querySelector('i');
+                if (isDark) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            }
+        }
+
+        // --- Firebase Auth & Firestore Logic ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                CURRENT_DRIVER_ID = user.uid;
+                userNameDisplay.textContent = user.displayName || 'Driver';
+                initDashboardSubscriptions();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function initDashboardSubscriptions() {
+            if (availableBookingsUnsubscribe) availableBookingsUnsubscribe();
+            if (assignedDeliveriesUnsubscribe) assignedDeliveriesUnsubscribe();
+            if (completedDeliveriesUnsubscribe) completedDeliveriesUnsubscribe();
+            if (driverProfileUnsubscribe) driverProfileUnsubscribe();
+
+            driverProfileUnsubscribe = onSnapshot(doc(db, "drivers", CURRENT_DRIVER_ID), (docSnap) => {
+                if (docSnap.exists()) {
+                    const driverData = docSnap.data();
+                    driverIsOnDuty = driverData.isOnDuty || false;
+                    updateAvailabilityUI();
+                    if (driverIsOnDuty) {
+                        fetchAvailableBookings();
+                        fetchAssignedDeliveries();
+                    } else {
+                        // Clear lists when off duty
+                        availableBookingsList.innerHTML = '';
+                        noAvailableBookingsMessage.style.display = 'none';
+                        availableBookingsOffDutyMessage.style.display = 'block';
+                        assignedDeliveriesList.innerHTML = '';
+                        noAssignedDeliveriesMessage.style.display = 'block';
+                        assignedDeliveriesListCard.classList.add('map-section-off-duty');
+                    }
+                }
+            });
+
+            // Fetch completed deliveries once
+            fetchCompletedDeliveries();
+        }
+
+        async function toggleDriverAvailability() {
+            if (!CURRENT_DRIVER_ID) return;
+
+            try {
+                const driverRef = doc(db, "drivers", CURRENT_DRIVER_ID);
+                await updateDoc(driverRef, {
+                    isOnDuty: !driverIsOnDuty,
+                    lastStatusUpdate: serverTimestamp()
+                });
+            } catch (e) {
+                console.error("Error toggling availability:", e);
+                showModal("Failed to update availability. Please try again.");
+            }
+        }
+
+        function updateAvailabilityUI() {
+            availabilityToggleBtn.disabled = false;
+            availabilityToggleBtn.innerHTML = driverIsOnDuty
+                ? `<i class="fas fa-toggle-on"></i> On Duty`
+                : `<i class="fas fa-toggle-off"></i> Off Duty`;
+            availabilityToggleBtn.className = driverIsOnDuty
+                ? 'btn primary-btn'
+                : 'btn danger-btn';
+
+            if (driverIsOnDuty) {
+                availableBookingsMapCard.classList.remove('map-section-off-duty');
+                availableBookingsListCard.classList.remove('bookings-section-off-duty');
+                assignedDeliveriesListCard.classList.remove('map-section-off-duty');
+            } else {
+                availableBookingsMapCard.classList.add('map-section-off-duty');
+                availableBookingsListCard.classList.add('bookings-section-off-duty');
+                assignedDeliveriesListCard.classList.add('map-section-off-duty');
+            }
+        }
+
+        function fetchAvailableBookings() {
+            if (availableBookingsUnsubscribe) availableBookingsUnsubscribe();
+            
+            availableBookingsLoading.style.display = 'block';
+            availableBookingsList.innerHTML = '';
+            noAvailableBookingsMessage.style.display = 'none';
+            availableBookingsError.style.display = 'none';
+            availableBookingsOffDutyMessage.style.display = 'none';
+
+            const q = query(
+                collection(db, "deliveries"),
+                where("status", "==", "Pending Driver Assignment")
+            );
+
+            availableBookingsUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                availableBookingsList.innerHTML = '';
+                availableBookingsLoading.style.display = 'none';
+                if (querySnapshot.empty) {
+                    noAvailableBookingsMessage.style.display = 'block';
+                } else {
+                    noAvailableBookingsMessage.style.display = 'none';
+                    querySnapshot.forEach((doc) => {
+                        const bookingCard = createBookingItem(doc.data(), doc.id, 'available');
+                        availableBookingsList.appendChild(bookingCard);
+                    });
+                }
+            }, (error) => {
+                console.error("Error fetching available bookings:", error);
+                availableBookingsLoading.style.display = 'none';
+                availableBookingsError.style.display = 'block';
+                availableBookingsError.textContent = 'Failed to load available bookings.';
+            });
+        }
+
+        function fetchAssignedDeliveries() {
+            if (assignedDeliveriesUnsubscribe) assignedDeliveriesUnsubscribe();
+
+            assignedDeliveriesLoading.style.display = 'block';
+            assignedDeliveriesList.innerHTML = '';
+            noAssignedDeliveriesMessage.style.display = 'none';
+            assignedDeliveriesError.style.display = 'none';
+
+            const q = query(
+                collection(db, "deliveries"),
+                where("assignedDriver", "==", CURRENT_DRIVER_ID),
+                where("status", "in", ["Driver Assigned", "Picked Up", "In Transit"])
+            );
+
+            assignedDeliveriesUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                assignedDeliveriesList.innerHTML = '';
+                assignedDeliveriesLoading.style.display = 'none';
+                if (querySnapshot.empty) {
+                    noAssignedDeliveriesMessage.style.display = 'block';
+                } else {
+                    noAssignedDeliveriesMessage.style.display = 'none';
+                    querySnapshot.forEach((doc) => {
+                        const deliveryCard = createBookingItem(doc.data(), doc.id, 'assigned');
+                        assignedDeliveriesList.appendChild(deliveryCard);
+                    });
+                }
+            }, (error) => {
+                console.error("Error fetching assigned deliveries:", error);
+                assignedDeliveriesLoading.style.display = 'none';
+                assignedDeliveriesError.style.display = 'block';
+                assignedDeliveriesError.textContent = 'Failed to load assigned deliveries.';
+            });
+        }
+
+        async function fetchCompletedDeliveries() {
+            completedDeliveriesLoading.style.display = 'block';
+            completedDeliveriesList.innerHTML = '';
+            noCompletedDeliveriesMessage.style.display = 'none';
+            completedDeliveriesError.style.display = 'none';
+
+            try {
+                const q = query(
+                    collection(db, "deliveries"),
+                    where("assignedDriver", "==", CURRENT_DRIVER_ID),
+                    where("status", "==", "Completed")
+                );
+                const querySnapshot = await getDocs(q);
+
+                let totalEarnings = 0;
+                let totalDeliveries = 0;
+                
+                if (querySnapshot.empty) {
+                    noCompletedDeliveriesMessage.style.display = 'block';
+                } else {
+                    noCompletedDeliveriesMessage.style.display = 'none';
+                    querySnapshot.forEach((doc) => {
+                        const delivery = doc.data();
+                        const deliveryCard = createBookingItem(delivery, doc.id, 'completed');
+                        completedDeliveriesList.appendChild(deliveryCard);
+                        totalEarnings += delivery.fareDetails?.totalFare || 0;
+                        totalDeliveries++;
+                    });
+                }
+                totalDeliveriesElement.textContent = totalDeliveries;
+                totalEarningsElement.textContent = `UGX ${totalEarnings.toLocaleString()}`;
+
+            } catch (e) {
+                console.error("Error fetching completed deliveries: ", e);
+                completedDeliveriesError.style.display = 'block';
+                completedDeliveriesError.textContent = 'Failed to load completed deliveries.';
+            } finally {
+                completedDeliveriesLoading.style.display = 'none';
+            }
+        }
+
+        async function acceptBooking(bookingId) {
+            if (!CURRENT_DRIVER_ID) return;
+
+            try {
+                const bookingRef = doc(db, "deliveries", bookingId);
+                await updateDoc(bookingRef, {
+                    assignedDriver: CURRENT_DRIVER_ID,
+                    status: "Driver Assigned",
+                    assignmentTimestamp: serverTimestamp(),
+                });
+                showModal("Booking accepted! Check 'My Assigned Deliveries'.");
+            } catch (e) {
+                console.error("Error accepting booking:", e);
+                showModal("Failed to accept booking. Please try again.");
+            }
+        }
+
+        async function declineBooking(bookingId) {
+            // Placeholder for decline logic. Could log it or remove from available list.
+            console.log(`Driver ${CURRENT_DRIVER_ID} declined booking ${bookingId}`);
+            showModal("Booking declined. It has been removed from your available list.");
+        }
+
+        // Add event listeners for dynamic buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.accept-booking-btn')) {
+                const bookingId = e.target.dataset.id;
+                acceptBooking(bookingId);
+            }
+            if (e.target.matches('.decline-booking-btn')) {
+                const bookingId = e.target.dataset.id;
+                declineBooking(bookingId);
+            }
+        });
+
+        // Other functions (createBookingItem, showModal, etc.) are assumed to be in your provided file.
+
+    </script>

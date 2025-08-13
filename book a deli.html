@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book New Delivery</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; }
+    #map { height: 500px; }
+    .form-container { padding: 10px; background: #f8f8f8; }
+    input { padding: 5px; margin: 5px 0; width: 100%; }
+    .info-box { padding: 10px; background: #fff; border: 1px solid #ddd; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <label>Pickup Location:</label>
+  <input type="text" id="pickupSearch" placeholder="Search or click on map"/>
+  
+  <label>Drop-off Location:</label>
+  <input type="text" id="dropoffSearch" placeholder="Search or click on map"/>
+  
+  <div class="info-box">
+    <strong>Distance:</strong> <span id="distanceDisplay">0 km</span>
+  </div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+  const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjE1NzhhM2UzZmYwNjQwYTc5Njc5ZGMyOWZjOGRiNjQ4IiwiaCI6Im11cm11cjY0In0=E"; // replace with your ORS key
+
+  const map = L.map('map').setView([0.3476, 32.5825], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  let pickupMarker = null;
+  let dropoffMarker = null;
+  let routeLine = null;
+  let fallbackLine = null;
+
+  const pickupSearch = L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
+      setPickup(e.geocode.center, e.geocode.name);
+    });
+
+  const dropoffSearch = L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
+      setDropoff(e.geocode.center, e.geocode.name);
+    });
+
+  pickupSearch.addTo(map);
+  dropoffSearch.addTo(map);
+
+  document.getElementById("pickupSearch").addEventListener("change", function() {
+    searchLocation(this.value, setPickup);
+  });
+  document.getElementById("dropoffSearch").addEventListener("change", function() {
+    searchLocation(this.value, setDropoff);
+  });
+
+  map.on('click', function(e) {
+    if (!pickupMarker) {
+      setPickup(e.latlng, "Pickup Point");
+    } else if (!dropoffMarker) {
+      setDropoff(e.latlng, "Drop-off Point");
+    }
+  });
+
+  function searchLocation(query, callback) {
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.length > 0) {
+          const latlng = L.latLng(data[0].lat, data[0].lon);
+          callback(latlng, data[0].display_name);
+        }
+      });
+  }
+
+  function setPickup(latlng, label) {
+    if (pickupMarker) map.removeLayer(pickupMarker);
+    pickupMarker = L.marker(latlng, { draggable: true }).addTo(map).bindPopup(label).openPopup();
+    pickupMarker.on('dragend', updateRoute);
+    updateRoute();
+  }
+
+  function setDropoff(latlng, label) {
+    if (dropoffMarker) map.removeLayer(dropoffMarker);
+    dropoffMarker = L.marker(latlng, { draggable: true }).addTo(map).bindPopup(label).openPopup();
+    dropoffMarker.on('dragend', updateRoute);
+    updateRoute();
+  }
+
+  function updateRoute() {
+    if (!pickupMarker || !dropoffMarker) return;
+
+    const start = pickupMarker.getLatLng();
+    const end = dropoffMarker.getLatLng();
+
+    // Remove old lines
+    if (routeLine) { map.removeLayer(routeLine); }
+    if (fallbackLine) { map.removeLayer(fallbackLine); }
+
+    // Call ORS
+    fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=$eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjE1NzhhM2UzZmYwNjQwYTc5Njc5ZGMyOWZjOGRiNjQ4IiwiaCI6Im11cm11cjY0In0=&start=${start.lng},${start.lat}&end=${end.lng},${end.lat}`)
+      .then(res => {
+        if (!res.ok) throw new Error("ORS request failed");
+        return res.json();
+      })
+      .then(data => {
+        const coords = data.features[0].geometry.coordinates.map(c => [c[1], c[0]]);
+        routeLine = L.polyline(coords, { color: 'blue', weight: 4 }).addTo(map);
+        const distanceKm = (data.features[0].properties.summary.distance / 1000).toFixed(2);
+        document.getElementById("distanceDisplay").innerText = distanceKm + " km";
+        map.fitBounds(routeLine.getBounds());
+      })
+      .catch(err => {
+        console.error("ORS failed:", err);
+        fallbackLine = L.polyline([start, end], { color: 'red', dashArray: '5,10', weight: 3 }).addTo(map);
+        const distanceKm = map.distance(start, end) / 1000;
+        document.getElementById("distanceDisplay").innerText = distanceKm.toFixed(2) + " km";
+        map.fitBounds(fallbackLine.getBounds());
+      });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>About FikaConnect - Smart Logistics for Uganda & East Africa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="FikaConnect is digitizing logistics in Uganda and East Africa, connecting farmers, traders, NGOs, and construction sites with reliable, affordable transport.">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+</head>
+<style>
+    /* --- Base Styles & Variables --- */
+:root {
+    --primary-color: #00b894; /* FikaConnect Green */
+    --secondary-color: #55efc4; /* Lighter Green */
+    --dark-green: #0A7E5A; /* Darker Green for sections */
+    --text-color: #333;
+    --light-gray: #f8f9fa;
+    --dark-gray: #ddd;
+    --white: #fff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    --border-radius: 8px;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--light-gray);
+    color: var(--text-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+    scroll-behavior: smooth; /* Smooth scrolling for anchor links */
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--primary-color);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 0;
+}
+
+h1 { font-size: 3.5rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 2rem; }
+h4 { font-size: 1.5rem; }
+
+p {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--dark-green);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.section-padding {
+    padding: 80px 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.bg-light-gray {
+    background-color: var(--white);
+}
+
+.bg-dark-green {
+    background: linear-gradient(to right, var(--primary-color), var(--dark-green));
+    color: var(--white);
+}
+
+.icon-left {
+    margin-right: 12px;
+    font-size: 1.2em; /* Slightly larger icon */
+}
+.bg-dark-green .icon-left {
+     color: var(--secondary-color); /* White icons on dark background */
+}
+
+/* Specific icon colors for problem/solution */
+.problem-icon { color: #dc3545; } /* Red for problems */
+.solution-icon { color: var(--primary-color); } /* Green for solutions */
+
+
+/* --- Hero Section --- */
+.hero {
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 120px 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 65vh; /* Taller hero */
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-content {
+    z-index: 1;
+    position: relative;
+    max-width: 900px;
+}
+
+.hero h1 {
+    color: white;
+    font-size: 4.2rem;
+    margin-bottom: 25px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.hero p {
+    font-size: 1rem;
+    max-width: 800px;
+    margin: 0 auto 50px;
+    opacity: 0.95;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+.cta-button {
+    display: inline-block;
+    background: var(--white);
+    color: var(--primary-color);
+    padding: 18px 40px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.2rem;
+    transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow);
+    letter-spacing: 0.5px;
+}
+
+.cta-button:hover {
+    background: var(--dark-green);
+    color: var(--white);
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+}
+
+/* --- Mission/Vision Section --- */
+.mission-vision .container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+}
+
+.mission-box, .vision-box {
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mission-box:hover, .vision-box:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--hover-shadow);
+}
+
+.mission-box h2, .vision-box h2 {
+    color: var(--dark-green);
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+/* --- Problem-Solution Section --- */
+.grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr; /* Default to single column */
+    gap: 40px;
+}
+
+.content-block {
+    background: var(--white);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content-block:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+}
+
+.content-block h3 {
+    color: var(--dark-green);
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+}
+
+.content-block p {
+    margin-bottom: 20px;
+}
+
+.content-block ul {
+    margin-top: 20px;
+}
+
+.content-block li {
+    margin-bottom: 18px;
+    display: flex;
+    align-items: flex-start;
+    font-size: 1.05rem;
+}
+
+.content-block li i {
+    margin-right: 12px;
+    font-size: 1.3rem;
+    flex-shrink: 0; /* Prevent icon from shrinking */
+    margin-top: 4px; /* Align icon better with text */
+}
+
+.stats-highlight {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-top: 30px;
+    font-size: 1.15rem;
+    background-color: var(--light-gray);
+    padding: 15px 20px;
+    border-radius: 5px;
+    border-left: 5px solid var(--primary-color);
+}
+
+
+/* --- How It Works Section --- */
+.how-it-works h2 {
+    text-align: center;
+    margin-bottom: 70px;
+    color: var(--dark-green);
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    text-align: center;
+    margin-bottom: 70px;
+}
+
+.step-item {
+    background: var(--white);
+    padding: 35px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-item:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--hover-shadow);
+}
+
+.step-icon {
+    font-size: 3.5rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    background: var(--secondary-color);
+    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+}
+
+.step-item h4 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--dark-green);
+    font-size: 1.6rem;
+}
+
+.video-demo {
+    background: var(--white);
+    padding: 50px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-top: 40px;
+    text-align: center;
+}
+
+.video-demo h3 {
+    color: var(--dark-green);
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+}
+
+.video-demo iframe {
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    box-shadow: var(--shadow);
+}
+
+.video-demo .caption {
+    font-style: italic;
+    color: #666;
+    margin-top: 20px;
+    font-size: 1rem;
+}
+
+/* --- Tech Advantage Section --- */
+.tech-advantage h2 {
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.tech-intro {
+    text-align: center;
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 60px;
+    opacity: 0.9;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tech-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    text-align: center;
+}
+
+.tech-item {
+    background: rgba(255, 255, 255, 0.2); /* More transparent white */
+    padding: 35px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    color: var(--white);
+    backdrop-filter: blur(8px); /* Stronger frosty effect */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle white border */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.tech-item:hover {
+    transform: translateY(-8px);
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.tech-item .icon-large {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: var(--secondary-color);
+}
+
+.tech-item h4 {
+    color: var(--white);
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+}
+
+.tech-item p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.tech-note {
+    text-align: center;
+    margin-top: 60px;
+    font-style: italic;
+    opacity: 0.9;
+    color: var(--white);
+}
+
+/* --- Impact Stats Section --- */
+.impact-stats h2 {
+    color: var(--dark-green);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.stats-intro {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 60px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    text-align: center;
+}
+
+.stat-item {
+    background: var(--primary-color); /* Primary color background */
+    padding: 35px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    color: var(--white);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-item:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--hover-shadow);
+    background: var(--dark-green);
+}
+
+.stat-number {
+    font-size: 4rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--white);
+}
+
+.stat-label {
+    font-size: 1.15rem;
+    opacity: 0.95;
+    font-weight: 600;
+}
+
+.stats-note {
+    text-align: center;
+    margin-top: 60px;
+    font-style: italic;
+    opacity: 0.9;
+    color: #666;
+}
+
+/* --- Call to Action Section --- */
+.call-to-action h2 {
+    color: var(--dark-green);
+    margin-bottom: 25px;
+}
+.call-to-action p {
+    font-size: 1.25rem;
+    max-width: 800px;
+    margin: 0 auto 50px;
+}
+
+.cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.cta-buttons .cta-button {
+    font-size: 1.2rem;
+    padding: 16px 35px;
+    min-width: 220px; /* Ensure buttons have a minimum width */
+}
+
+.primary-cta {
+    background: var(--primary-color);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(0, 184, 148, 0.4);
+}
+
+.primary-cta:hover {
+    background: var(--dark-green);
+    color: var(--white);
+    box-shadow: 0 6px 16px rgba(0, 184, 148, 0.6);
+}
+
+.secondary-cta {
+    background: var(--white);
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.secondary-cta:hover {
+    background: var(--primary-color);
+    color: var(--white);
+    box-shadow: var(--shadow);
+}
+
+.tertiary-cta {
+    background: none;
+    color: #666;
+    border: 1px solid #ccc;
+    box-shadow: none;
+}
+
+.tertiary-cta:hover {
+    background: var(--light-gray);
+    color: var(--text-color);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+/* --- Footer --- */
+footer {
+    background-color: #222;
+    color: white;
+    padding: 50px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+footer p {
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.social-links {
+    margin-top: 20px;
+}
+
+.social-links a {
+    color: white;
+    font-size: 1.6rem;
+    margin: 0 12px;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--secondary-color);
+}
+
+/* --- Animations --- */
+.fade-in {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeInAnimation 1s forwards;
+}
+
+@keyframes fadeInAnimation {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-delay {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: fadeInAnimation 1s forwards;
+    animation-delay: 0.6s;
+}
+
+.bounce-animation {
+    animation: bounce 1s ease;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Scroll-triggered animations */
+.fade-in-scroll {
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.fade-in-scroll.fade-in-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.slide-in-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.slide-in-left.slide-in-active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.slide-in-right {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.slide-in-right.slide-in-active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.bounce-in {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.bounce-in.bounce-in-active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+
+/* --- Responsive Design --- */
+@media (max-width: 767px) {
+    h1 { font-size: 2.8rem; }
+    h2 { font-size: 2rem; }
+    h3 { font-size: 1.6rem; }
+    h4 { font-size: 1.3rem; }
+    p { font-size: 1rem; }
+
+    .hero {
+        padding: 80px 20px;
+        min-height: 50vh;
+    }
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+    }
+
+    .cta-button {
+        padding: 14px 30px;
+        font-size: 1rem;
+    }
+
+    .section-padding {
+        padding: 60px 0;
+    }
+
+    .content-block {
+        padding: 30px;
+    }
+
+    .step-item, .stat-item, .tech-item {
+        padding: 30px;
+    }
+
+    .step-icon {
+        font-size: 3rem;
+        width: 80px;
+        height: 80px;
+    }
+    .tech-item .icon-large {
+        font-size: 3.5rem;
+    }
+
+    .cta-buttons {
+        flex-direction: column; /* Stack buttons vertically on small screens */
+        align-items: center;
+    }
+    .cta-buttons .cta-button {
+        width: 90%; /* Make buttons wider */
+        max-width: 300px;
+    }
+}
+
+@media (min-width: 768px) {
+    .grid-2-col {
+        grid-template-columns: 1fr 1fr;
+    }
+    .mission-vision .container {
+        grid-template-columns: 1fr 1fr;
+    }
+    .hero h1 {
+        font-size: 4.5rem;
+    }
+    .hero p {
+        font-size: 1.7rem;
+    }
+    .steps-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .tech-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .steps-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .tech-features-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .hero h1 {
+        font-size: 5.2rem;
+    }
+    .hero p {
+        font-size: 1.8rem;
+    }
+}
+
+/* General image/iframe styling */
+img, iframe {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Remove extra space below images */
+}
+</style>
+<body>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="fade-in">Connecting Communities, Empowering Economies.</h1>
+            <p class="fade-in">FikaConnect is transforming logistics in Uganda and across East Africa, making transportation **reliable, transparent, and accessible** for everyone.</p>
+            <a href="book-and-track.html" class="cta-button fade-in-delay">Send Goods Now <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </header>
+
+    <main>
+        <section class="mission-vision section-padding">
+            <div class="container">
+                <div class="mission-box bounce-in">
+                    <h2><i class="fas fa-bullseye icon-left"></i> Our Mission</h2>
+                    <p>To digitize and revolutionize logistics for **underserved communities**, ensuring every delivery is traceable, affordable, and empowers local transporters and senders alike.</p>
+                </div>
+                <div class="vision-box bounce-in">
+                    <h2><i class="fas fa-lightbulb icon-left"></i> Our Vision</h2>
+                    <p>To build Sub-Saharan Africa's most trusted and efficient digital logistics network, fostering **economic growth, reducing waste**, and connecting every corner of the region.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="problem-solution section-padding bg-light-gray">
+            <div class="container grid-2-col">
+                <div class="problem-statement content-block slide-in-left">
+                    <h3><i class="fas fa-map-marked-alt icon-left"></i> The Challenge: Fragmented Logistics</h3>
+                    <p>In Uganda and much of Sub-Saharan Africa, the logistics sector is plagued by **inefficiency, opacity, and fragmentation**, particularly for those who need it most:</p>
+                    <ul>
+                        <li><i class="fas fa-times-circle problem-icon"></i> High Costs & Unreliability:** Rural farmers, women-led construction sites, traders, and NGOs struggle to find affordable, trustworthy transport for their goods, often relying on informal, costly brokers.</li>
+                        <li><i class="fas fa-times-circle problem-icon"></i> **Zero Visibility:** Manual methods mean no live tracking, causing anxiety and miscommunication about goods in transit.</li>
+                        <li><i class="fas fa-times-circle problem-icon"></i> **Underutilized Capacity:** Thousands of informal truck and van owners lack consistent jobs and digital tools to optimize their routes and income.</li>
+                        <li><i class="fas fa-times-circle problem-icon"></i> **No Proof of Delivery:** Verification is manual, unreliable, or entirely missing, leading to disputes and losses.</li>
+                    </ul>
+                    <p class="stats-highlight">This results in significant losses, with rural SMEs losing up to **25% of perishable inventory** due to disorganized delivery.</p>
+                </div>
+                <div class="solution-statement content-block slide-in-right">
+                    <h3><i class="fas fa-handshake icon-left"></i> Our Solution: FikaConnect</h3>
+                    <p>FikaConnect is a transformative digital platform that **bridges the gap**, connecting senders directly with a verified network of transporters. We provide:</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle solution-icon"></i> **Seamless Booking:** A mobile-responsive platform to easily request pickups, choose vehicle types (trucks, vans, boda-bodas), and specify cargo.</li>
+                        <li><i class="fas fa-check-circle solution-icon"></i> **Real-time GPS Tracking:** Monitor your goods live via Google Maps API, from pickup to drop-off.</li>
+                        <li><i class="fas fa-check-circle solution-icon"></i> **Digital Proof-of-Delivery:** Transporters upload photo proof, and senders receive instant confirmation with PDF receipts.</li>
+                        <li><i class="fas fa-check-circle solution-icon"></i> **Smart Dashboards:** Dedicated, intuitive interfaces for senders, transporters, and dispatchers for full operational control.</li>
+                        <li><i class="fas fa-check-circle solution-icon"></i> **Instant Communication:** Receive updates via SMS, WhatsApp, or in-app notifications.</li>
+                    </ul>
+                    <p class="stats-highlight">Every delivery is now **traceable, trusted, and visible**, optimizing operations and empowering local businesses.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="how-it-works section-padding">
+            <div class="container">
+                <h2><i class="fas fa-cogs icon-left"></i> How FikaConnect Works: Connecting You to Your Deliveries</h2>
+                <div class="steps-grid">
+                    <div class="step-item fade-in-scroll">
+                        <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+                        <h4>1. Register & Request</h4>
+                        <p>Sign up, log in, and easily request a delivery from your personalized dashboard. Specify locations, cargo, and vehicle.</p>
+                    </div>
+                    <div class="step-item fade-in-scroll">
+                        <div class="step-icon"><i class="fas fa-bell"></i></div>
+                        <h4>2. Instant Matching</h4>
+                        <p>Available transporters in your area are immediately notified in real-time to accept your booking.</p>
+                    </div>
+                    <div class="step-item fade-in-scroll">
+                        <div class="step-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <h4>3. Live Tracking</h4>
+                        <p>Watch your goods move from origin to destination with real-time GPS tracking on Google Maps.</p>
+                    </div>
+                    <div class="step-item fade-in-scroll">
+                        <div class="step-icon"><i class="fas fa-check-double"></i></div>
+                        <h4>4. Verified Completion</h4>
+                        <p>Driver uploads proof of delivery, and both sender and receiver get instant confirmation and receipts.</p>
+                    </div>
+                </div>
+                <div class="video-demo fade-in-scroll">
+                    <h3>See FikaConnect in Action!</h3>
+                    <iframe width="100%" height="450" src="https://www.youtube.com/embed/YOUR_YOUTUBE_VIDEO_ID" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    <p class="caption">A quick walkthrough demonstrating FikaConnect's seamless booking, tracking, and delivery process.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="tech-advantage section-padding bg-dark-green text-white">
+            <div class="container text-center">
+                <h2><i class="fas fa-laptop-code icon-left"></i> Our Technological Edge</h2>
+                <p class="tech-intro">FikaConnect is built on robust, scalable technology designed for the realities of logistics in East Africa.</p>
+                <div class="tech-features-grid">
+                    <div class="tech-item fade-in-scroll">
+                        <i class="fas fa-fire icon-large"></i>
+                        <h4>Real-time Firebase Integration</h4>
+                        <p>Instant synchronization of data for live visibility across all operations—bookings, deliveries, driver locations, and notifications.</p>
+                    </div>
+                    <div class="tech-item fade-in-scroll">
+                        <i class="fas fa-map-marked icon-large"></i>
+                        <h4>Google Maps & GPS API</h4>
+                        <p>Accurate route optimization, precise truck location tracking, and verified collection points across Uganda.</p>
+                    </div>
+                    <div class="tech-item fade-in-scroll">
+                        <i class="fas fa-mobile-alt icon-large"></i>
+                        <h4>Mobile-Responsive Design</h4>
+                        <p>Accessible on any device, ensuring seamless experience for senders and transporters on the go.</p>
+                    </div>
+                    <div class="tech-item fade-in-scroll">
+                        <i class="fas fa-robot icon-large"></i>
+                        <h4>AI-Powered Chat (Future)</h4>
+                        <p>Integrating intelligent quick replies and communication tools for enhanced user interaction.</p>
+                    </div>
+                </div>
+                <p class="tech-note">Our stack ensures reliability, scalability, and a user-friendly experience for all stakeholders.</p>
+            </div>
+        </section>
+
+        <section class="impact-stats section-padding">
+            <div class="container">
+                <h2><i class="fas fa-chart-line icon-left"></i> Our Impact So Far</h2>
+                <p class="stats-intro text-center">We're already making a tangible difference for communities and businesses across Uganda.</p>
+                <div class="stats-grid">
+                    <div class="stat-item fade-in-scroll">
+                        <span id="deliveryStat" class="stat-number bounce-animation">0</span>
+                        <p class="stat-label">Successful Deliveries</p>
+                    </div>
+                    <div class="stat-item fade-in-scroll">
+                        <span class="stat-number">500+</span>
+                        <p class="stat-label">Active Users (Senders & Transporters)</p>
+                    </div>
+                    <div class="stat-item fade-in-scroll">
+                        <span class="stat-number">22%</span>
+                        <p class="stat-label">Avg. Cost Saving Per Sender</p>
+                    </div>
+                    <div class="stat-item fade-in-scroll">
+                        <span class="stat-number">3s</span>
+                        <p class="stat-label">Real-time Latency (GPS & Firebase)</p>
+                    </div>
+                </div>
+                <p class="stats-note text-center">These numbers reflect our commitment to efficient, affordable, and transparent logistics in Uganda.</p>
+            </div>
+        </section>
+
+        <section class="call-to-action section-padding bg-light-gray">
+            <div class="container text-center">
+                <h2>Ready to Experience Smarter Logistics?</h2>
+                <p>Whether you're a farmer, a trader, an NGO, or a transporter, FikaConnect is your partner for reliable and efficient goods movement.</p>
+                <div class="cta-buttons">
+                    <a href="book-and-track.html" class="cta-button primary-cta"><i class="fas fa-box-open"></i> Send Goods Today</a>
+                    <a href="dashboard.html" class="cta-button secondary-cta"><i class="fas fa-truck"></i> Join Our Transporter Network</a>
+                    <a href="contact.html" class="cta-button tertiary-cta"><i class="fas fa-envelope"></i> Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 FikaConnect — Empowering Logistics in East Africa.</p>
+            <div class="social-links">
+                <a href="#" aria-label="FikaConnect Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="FikaConnect Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="FikaConnect LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" aria-label="FikaConnect Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Firebase Configuration (already updated with your keys) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            databaseURL: "https://fika-connect-5f844-default-rtdb.firebaseio.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "124223307329",
+            appId: "1:124223307329:web:76c547b91dcd25205550c0"
+        };
+
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // --- Live Delivery Stat Update and Animation ---
+        const deliveryStatElement = document.getElementById("deliveryStat");
+        if (deliveryStatElement) {
+            db.ref("deliveryCount").on("value", snapshot => {
+                const count = snapshot.val();
+                if (count !== null) {
+                    deliveryStatElement.textContent = count.toLocaleString(); // Format with commas
+                    deliveryStatElement.classList.add("bounce-animation");
+                    setTimeout(() => deliveryStatElement.classList.remove("bounce-animation"), 1000);
+                } else {
+                    deliveryStatElement.textContent = "N/A";
+                }
+            }, (error) => {
+                console.error("Firebase deliveryCount read failed:", error);
+                deliveryStatElement.textContent = "Error";
+            });
+        }
+
+        // --- Scroll-triggered Animations ---
+        const observerOptions = {
+            threshold: 0.1 // Trigger when 10% of element is visible
+        };
+
+        const fadeInObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-active');
+                    fadeInObserver.unobserve(entry.target); // Unobserve once animated
+                }
+            });
+        }, observerOptions);
+
+        const slideObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('slide-in-active');
+                    slideObserver.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        const bounceObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('bounce-in-active');
+                    bounceObserver.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+
+        document.querySelectorAll('.fade-in-scroll').forEach(element => fadeInObserver.observe(element));
+        document.querySelectorAll('.slide-in-left, .slide-in-right').forEach(element => slideObserver.observe(element));
+        document.querySelectorAll('.bounce-in').forEach(element => bounceObserver.observe(element));
+
+
+        // Ensure the initial hero animation plays on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.hero h1').classList.add('fade-in');
+            document.querySelector('.hero p').classList.add('fade-in');
+            document.querySelector('.hero .cta-button').classList.add('fade-in-delay');
+        });
+    </script>
+
+</body>
+</html>

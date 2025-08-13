@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FikaConnect Login</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for spinner icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+        }
+        /* Custom styles for the message box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none; /* Hidden by default */
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-box.info { /* Added for info messages like forgot password prompt */
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <!-- Message Box for alerts -->
+    <div id="messageBox" class="message-box"></div>
+
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back!</h1>
+            <p class="text-gray-600">Log in to your FikaConnect account</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="email" name="email" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out pr-10">
+                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" id="togglePassword">
+                        <i class="fa-solid fa-eye text-gray-500"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center">
+                    <input id="rememberMe" name="rememberMe" type="checkbox"
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="rememberMe" class="ml-2 block text-gray-900">Remember me</label>
+                </div>
+                <a href="#" id="forgotPasswordLink" class="text-blue-600 hover:text-blue-700 font-medium">Forgot Password?</a>
+            </div>
+
+            <button type="submit" id="loginButton"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out flex items-center justify-center">
+                <span id="buttonText">Log In</span>
+                <svg id="loadingSpinner" class="animate-spin h-5 w-5 text-white ml-2 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </form>
+
+        <p class="text-center text-gray-600 text-sm mt-6">
+            Don't have an account?
+            <a href="signup.html" class="text-blue-600 hover:text-blue-700 font-medium">Sign Up</a>
+        </p>
+
+        <div class="flex justify-between items-center text-sm mt-6">
+            <a href="#" class="text-gray-600 hover:text-gray-800 font-medium">About Us</a>
+            <div class="relative">
+                <select id="languageSelector" class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-3 pr-8 rounded-md leading-tight focus:outline-none focus:bg-white focus:border-blue-500">
+                    <option value="en">English</option>
+                    <option value="lg">Luganda</option>
+                    <option value="sw">Kiswahili</option>
+                    <option value="ls">Lusoga</option>
+                    <option value="fr">French</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Your Firebase Configuration (replace with your actual config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU", // Ensure this is your correct Firebase API key
+            authDomain: "fika-connect-5f844.firebaseapp.com",
+            projectId: "fika-connect-5f844",
+            storageBucket: "fika-connect-5f844.appspot.com",
+            messagingSenderId: "124223307329",
+            appId: "1:124223307329:web:76c547b91dcd25205550c0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton'); // Changed from loginBtn
+        const buttonText = document.getElementById('buttonText'); // For loading state text
+        const loadingSpinner = document.getElementById('loadingSpinner'); // For loading spinner
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const togglePasswordBtn = document.getElementById('togglePassword'); // Password toggle button
+
+        // Object to hold translations (simplified for demonstration)
+        const translations = {
+            en: {
+                welcomeBack: "Welcome Back!",
+                loginPrompt: "Log in to your FikaConnect account",
+                emailAddress: "Email Address",
+                password: "Password",
+                rememberMe: "Remember me",
+                forgotPassword: "Forgot Password?",
+                logIn: "Log In",
+                loggingIn: "Logging In...",
+                noAccount: "Don't have an account?",
+                signUp: "Sign Up",
+                aboutUs: "About Us",
+                invalidEmail: "Invalid email address.",
+                userDisabled: "Your account has been disabled.",
+                userNotFound: "No user found with this email.",
+                wrongPassword: "Incorrect email or password.",
+                tooManyRequests: "Too many login attempts. Please try again later.",
+                loginFailed: "Login failed. Please check your credentials.",
+                enterEmailForReset: "Please enter your email address to reset password.",
+                passwordResetSent: "Password reset email sent. Check your inbox.",
+                failedToSendReset: "Failed to send password reset email.",
+                unknownError: "An unknown error occurred."
+            },
+            lg: {
+                welcomeBack: "Tukusanyukidde!",
+                loginPrompt: "Yingira mu akawunti yo eya FikaConnect",
+                emailAddress: "Endagiriro ya Email",
+                password: "Ekigambo ky'ekyama",
+                rememberMe: "Nzijukira",
+                forgotPassword: "Werabidde ekigambo ky'ekyama?",
+                logIn: "Yingira",
+                loggingIn: "Nyingira...",
+                noAccount: "Tolina akawunti?",
+                signUp: "Wandisa",
+                aboutUs: "Kwatukwata",
+                invalidEmail: "Endagiriro ya email si nnungi.",
+                userDisabled: "Akawunti eno ekozeddwako.",
+                userNotFound: "Tewali mukozesa alina email eno.",
+                wrongPassword: "Email oba ekigambo ky'ekyama kikyamu.",
+                tooManyRequests: "Okuyingira kungi nnyo. Gezaako oluvannyuma.",
+                loginFailed: "Okuyingira kulemye. Kakasa ebikukwatako.",
+                enterEmailForReset: "Yingiza email yo okukyusa ekigambo ky'ekyama.",
+                passwordResetSent: "Email y'okukyusa ekigambo ky'ekyama etumiddwa. Kebera inbox yo.",
+                failedToSendReset: "Okutuma email y'okukyusa ekigambo ky'ekyama kulemye.",
+                unknownError: "Waliwo ekintu ekikyasobye."
+            },
+            sw: {
+                welcomeBack: "Karibu Tena!",
+                loginPrompt: "Ingia kwenye akaunti yako ya FikaConnect",
+                emailAddress: "Anwani ya Barua Pepe",
+                password: "Nenosiri",
+                rememberMe: "Nikumbuke",
+                forgotPassword: "Umesahau Nenosiri?",
+                logIn: "Ingia",
+                loggingIn: "Inaingia...",
+                noAccount: "Huna akaunti?",
+                signUp: "Jisajili",
+                aboutUs: "Kuhusu Sisi",
+                invalidEmail: "Anwani ya barua pepe si sahihi.",
+                userDisabled: "Akaunti yako imezimwa.",
+                userNotFound: "Hakuna mtumiaji aliyepatikana na barua pepe hii.",
+                wrongPassword: "Barua pepe au nenosiri si sahihi.",
+                tooManyRequests: "Jaribio nyingi za kuingia. Tafadhali jaribu tena baadaye.",
+                loginFailed: "Kuingia kumefeli. Tafadhali angalia vitambulisho vyako.",
+                enterEmailForReset: "Tafadhali weka anwani yako ya barua pepe ili kuweka upya nenosiri.",
+                passwordResetSent: "Barua pepe ya kuweka upya nenosiri imetumwa. Angalia kikasha chako.",
+                failedToSendReset: "Imeshindwa kutuma barua pepe ya kuweka upya nenosiri.",
+                unknownError: "Hitilafu isiyojulikana imetokea."
+            },
+            ls: {
+                welcomeBack: "Muzze Mirembe!",
+                loginPrompt: "Yingira mu akawunti yo eya FikaConnect",
+                emailAddress: "Endagiriro y'Email",
+                password: "Ekigambo ky'ekyama",
+                rememberMe: "Nzijukira",
+                forgotPassword: "Werabidde ekigambo ky'ekyama?",
+                logIn: "Yingira",
+                loggingIn: "Nyingira...",
+                noAccount: "Tolina akawunti?",
+                signUp: "Wandisa",
+                aboutUs: "Kwatukwata",
+                invalidEmail: "Endagiriro ya email si nnungi.",
+                userDisabled: "Akawunti eno ekozeddwako.",
+                userNotFound: "Tewali mukozesa alina email eno.",
+                wrongPassword: "Email oba ekigambo ky'ekyama kikyamu.",
+                tooManyRequests: "Okuyingira kungi nnyo. Gezaako oluvannyuma.",
+                loginFailed: "Okuyingira kulemye. Kakasa ebikukwatako.",
+                enterEmailForReset: "Yingiza email yo okukyusa ekigambo ky'ekyama.",
+                passwordResetSent: "Email y'okukyusa ekigambo ky'ekyama etumiddwa. Kebera inbox yo.",
+                failedToSendReset: "Okutuma email y'okukyusa ekigambo ky'ekyama kulemye.",
+                unknownError: "Waliwo ekintu ekikyasobye."
+            },
+            fr: {
+                welcomeBack: "Bienvenue de nouveau !",
+                loginPrompt: "Connectez-vous à votre compte FikaConnect",
+                emailAddress: "Adresse e-mail",
+                password: "Mot de passe",
+                rememberMe: "Se souvenir de moi",
+                forgotPassword: "Mot de passe oublié ?",
+                logIn: "Se connecter",
+                loggingIn: "Connexion...",
+                noAccount: "Vous n'avez pas de compte ?",
+                signUp: "S'inscrire",
+                aboutUs: "À propos de nous",
+                invalidEmail: "Adresse e-mail invalide.",
+                userDisabled: "Votre compte a été désactivé.",
+                userNotFound: "Aucun utilisateur trouvé avec cet e-mail.",
+                wrongPassword: "E-mail ou mot de passe incorrect.",
+                tooManyRequests: "Trop de tentatives de connexion. Veuillez réessayer plus tard.",
+                loginFailed: "Échec de la connexion. Veuillez vérifier vos identifiants.",
+                enterEmailForReset: "Veuillez entrer votre adresse e-mail pour réinitialiser le mot de passe.",
+                passwordResetSent: "E-mail de réinitialisation du mot de passe envoyé. Vérifiez votre boîte de réception.",
+                failedToSendReset: "Échec de l'envoi de l'e-mail de réinitialisation du mot de passe.",
+                unknownError: "Une erreur inconnue est survenue."
+            }
+        };
+
+        // Function to update UI text based on selected language
+        function updateUIText(lang) {
+            document.querySelector('h1').textContent = translations[lang].welcomeBack;
+            document.querySelector('p').textContent = translations[lang].loginPrompt;
+            document.querySelector('label[for="email"]').textContent = translations[lang].emailAddress;
+            document.querySelector('label[for="password"]').textContent = translations[lang].password;
+            document.querySelector('label[for="rememberMe"]').textContent = translations[lang].rememberMe;
+            document.getElementById('forgotPasswordLink').textContent = translations[lang].forgotPassword;
+            document.getElementById('buttonText').textContent = translations[lang].logIn;
+            // Update the "Don't have an account?" text
+            const noAccountParagraph = document.querySelector('.text-center.text-gray-600.text-sm.mt-6');
+            if (noAccountParagraph) {
+                noAccountParagraph.innerHTML = `${translations[lang].noAccount} <a href="signup.html" class="text-blue-600 hover:text-blue-700 font-medium">${translations[lang].signUp}</a>`;
+            }
+            // Update the "About Us" link text
+            const aboutUsLink = document.querySelector('.flex.justify-between.items-center.text-sm.mt-6 a');
+            if (aboutUsLink) {
+                aboutUsLink.textContent = translations[lang].aboutUs;
+            }
+        }
+
+        // Function to show messages
+        function showMessage(message, type) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 3000); // Hide after 3 seconds
+        }
+
+        // --- Helper function to handle user redirection based on role ---
+        async function handleUserRoleAndRedirect(user) {
+            if (!user) {
+                return;
+            }
+
+            // Check if user is an Admin
+            const adminDocRef = doc(db, "admins", user.uid);
+            const adminDocSnap = await getDoc(adminDocRef);
+
+            if (adminDocSnap.exists() && adminDocSnap.data().isAdmin === true) {
+                console.log("Admin user logged in. Redirecting to admin dashboard.");
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            // Check if user is a Driver or Sender/Customer
+            const userDocRef = doc(db, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData.isDriver) {
+                    console.log("Driver user logged in. Redirecting to driver dashboard.");
+                    localStorage.setItem('currentDriverId', user.uid);
+                    window.location.href = 'driver-dashboard.html';
+                    return;
+                } else {
+                    console.log("Sender/Customer logged in. Redirecting to sender dashboard.");
+                    window.location.href = 'sender-dashboard.html'; // Corrected typo from sender-dasboard
+                    return;
+                }
+            } else {
+                console.warn("User profile incomplete or not found in 'users' collection for UID:", user.uid);
+                // If user profile not found, create a basic one as a sender and redirect
+                try {
+                    await setDoc(doc(db, "users", user.uid), {
+                        email: user.email,
+                        isDriver: false, // Default to sender
+                        createdAt: serverTimestamp()
+                    });
+                    showMessage("Basic profile created. Redirecting to sender dashboard.", 'info');
+                    window.location.href = 'sender-dashboard.html'; // Corrected typo
+                } catch (error) {
+                    console.error("Error creating user profile:", error);
+                    showMessage('Error creating user profile. Please try again or contact support.', 'error');
+                    await auth.signOut(); // Sign out user if profile creation fails
+                }
+            }
+        }
+
+        // --- Check auth state on page load (only redirect if already logged in with complete profile) ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Check if user has a complete profile before redirecting
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        // Only redirect if user has complete profile data based on your criteria (e.g., name and email)
+                        // Note: The provided snippet checks for `userData.name && userData.email`.
+                        // For FikaConnect, you might have other criteria for a "complete" profile.
+                        // For now, I'll assume if the userDoc exists, we attempt to redirect.
+                        await handleUserRoleAndRedirect(user);
+                    } else {
+                        // Also check if user is an admin if their profile isn't in 'users'
+                        const adminDocRef = doc(db, "admins", user.uid);
+                        const adminDocSnap = await getDoc(adminDocRef);
+
+                        if (adminDocSnap.exists() && adminDocSnap.data().isAdmin === true) {
+                            window.location.href = 'admin-dashboard.html';
+                        } else {
+                            console.log("No user profile found, staying on login page (or profile incomplete).");
+                            // If no profile found in 'users' or 'admins', they might be a new user
+                            // who hasn't completed signup, or an anonymous user.
+                            // Keep them on login page or prompt to complete profile.
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error checking user profile on page load:", error);
+                    // Stay on login page on error
+                }
+            }
+        });
+
+        // Set initial language from localStorage or default to English on page load
+        const savedLang = localStorage.getItem('fikaconnect_lang') || 'en';
+        updateUIText(savedLang);
+        document.getElementById('languageSelector').value = savedLang;
+
+
+        // --- Handle Login Form Submission ---
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+
+            // Set Firebase authentication persistence based on "Remember me"
+            const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+            await setPersistence(auth, persistence);
+
+            buttonText.textContent = translations[savedLang].loggingIn;
+            loadingSpinner.classList.remove('hidden');
+            loginButton.disabled = true;
+            showMessage('', ''); // Clear previous messages
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log('User logged in:', user);
+                showMessage(translations[savedLang].loginSuccess, 'success');
+                await handleUserRoleAndRedirect(user); // Use your provided redirect logic
+            } catch (error) {
+                console.error("Login Error:", error);
+                let errorMessage = translations[savedLang].unknownError;
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        errorMessage = translations[savedLang].invalidEmail;
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = translations[savedLang].userDisabled;
+                        break;
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                        errorMessage = translations[savedLang].wrongPassword;
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = translations[savedLang].tooManyRequests;
+                        break;
+                    default:
+                        errorMessage = translations[savedLang].loginFailed;
+                        break;
+                }
+                showMessage(errorMessage, 'error');
+            } finally {
+                buttonText.textContent = translations[savedLang].logIn;
+                loadingSpinner.classList.add('hidden');
+                loginButton.disabled = false;
+            }
+        });
+
+        // --- Forgot Password logic ---
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            if (!email) {
+                showMessage(translations[savedLang].enterEmailForReset, 'info');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showMessage(translations[savedLang].passwordResetSent, 'success');
+            } catch (error) {
+                console.error("Password Reset Error:", error);
+                let errorMessage = translations[savedLang].failedToSendReset;
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = translations[savedLang].userNotFound;
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = translations[savedLang].invalidEmail;
+                }
+                showMessage(errorMessage, 'error');
+            }
+        });
+
+        // --- Password Toggle Logic ---
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                // Toggle the eye icon
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        }
+
+        // Handle language selection change
+        document.getElementById('languageSelector').addEventListener('change', (e) => {
+            const selectedLang = e.target.value;
+            localStorage.setItem('fikaconnect_lang', selectedLang); // Save preference
+            updateUIText(selectedLang);
+        });
+
+        // Placeholder for About Us link
+        document.querySelector('.flex.justify-between.items-center.text-sm.mt-6 a').addEventListener('click', (e) => {
+            e.preventDefault();
+            showMessage('About Us page coming soon!', 'success');
+            // In a real application, you would navigate to an about us page here.
+            // window.location.href = '/about.html';
+        });
+    </script>
+</body>
+</html>

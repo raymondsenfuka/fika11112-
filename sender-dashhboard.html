@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sender Dashboard | FikaConnect</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    </head>
+   <style>
+    :root {
+        --bg-light: #f8f9fa;
+        --bg-dark: #121212;
+        --text-light: #fff;
+        --text-dark: #222;
+        --primary: #28a745;
+        --primary-dark: #1e7e34;
+        --secondary: #6c757d;
+        --card-light: #ffffff;
+        --card-dark: #1e1e1e;
+        --status-pending: #ffc107;
+        --status-picked-up: #17a2b8;
+        --status-in-transit: #007bff;
+        --status-delivered: #28a745;
+        --status-cancelled: #dc3545;
+        --sidebar-width: 260px;
+        --header-height: 70px;
+        --transition: all 0.3s ease;
+        --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+    }
+
+    body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background-color:#ebe9e4cf;
+        color: var(--text-dark);
+        transition: var(--transition);
+        display: flex;
+        min-height: 100vh;
+    }
+
+    body.dark-mode {
+        background-color: var(--bg-dark);
+        color: var(--text-light);
+    }
+
+    /* Header Enhancements */
+    .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-height);
+        background: var(--card-light);
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1000;
+        transition: var(--transition);
+    }
+
+    .dark-mode .top-bar {
+        background: var(--card-dark);
+    }
+
+    .menu-toggle {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--primary);
+        cursor: pointer;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        transition: var(--transition);
+    }
+
+    .menu-toggle:hover {
+        background: rgba(40, 167, 69, 0.1);
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: var(--primary);
+        text-decoration: none;
+    }
+
+    .logo i {
+        margin-right: 10px;
+        font-size: 1.6rem;
+    }
+
+    .user-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .theme-toggle {
+        background: transparent;
+        border: none;
+        font-size: 1.3rem;
+        cursor: pointer;
+        color: var(--primary);
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: fixed;
+        align-items: center;
+        justify-content: center;
+        transition: var(--transition);
+    }
+
+    .theme-toggle:hover {
+        background: rgba(40, 167, 69, 0.1);
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 15px;
+        border-radius: 30px;
+        background: rgba(40, 167, 69, 0.1);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .user-profile:hover {
+        background: rgba(40, 167, 69, 0.2);
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* Sidebar Enhancements */
+    .sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        width: var(--sidebar-width);
+        height: calc(100vh - var(--header-height));
+        background-color: var(--card-light);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 900;
+        padding: 20px 0;
+        overflow-y: auto;
+        border-right: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .dark-mode .sidebar {
+        background-color: var(--card-dark);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-header {
+        padding: 0 20px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        margin-bottom: 15px;
+    }
+
+    .dark-mode .sidebar-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-header h2 {
+        color: var(--primary);
+        margin-bottom: 5px;
+        font-size: 1.4rem;
+    }
+
+    .sidebar-header p {
+        font-size: 0.85rem;
+        color: var(--secondary);
+        margin: 0;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar-nav li {
+        margin: 0;
+    }
+
+    .sidebar-nav a {
+        text-decoration: none;
+        color: inherit;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--primary);
+    }
+
+    .sidebar-nav a.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: var(--primary);
+        border-radius: 0 4px 4px 0;
+    }
+
+    .sidebar-nav a i {
+        width: 24px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        padding: 20px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dark-mode .sidebar-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 15px;
+        background-color: #dc3545;
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .logout-btn:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .logout-btn i {
+        font-size: 1.1rem;
+    }
+
+    /* Main Content Enhancements */
+    .main-content {
+        flex: 1;
+        margin-left: 0;
+        padding-top: 6px;
+        padding: calc(var(--header-height) + 20px) 20px 20px;
+        transition: margin-left 0.3s;
+    }
+
+    @media (min-width: 992px) {
+        .main-content {
+            margin-left: var(--sidebar-width);
+        }
+        
+        .sidebar {
+            transform: translateX(0);
+        }
+        
+        .menu-toggle {
+            display: none;
+        }
+        
+        .overlay {
+            display: none !important;
+        }
+    }
+
+    .dashboard-header {
+        margin-bottom: 30px;
+    }
+
+    .dashboard-header h2 {
+        margin-bottom: 5px;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .dashboard-header p {
+        color: var(--secondary);
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .dashboard-actions {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 20px;
+        background: linear-gradient(90deg, var(--primary), #20c997);
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 400;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .primary-btn:hover {
+        background: linear-gradient(90deg, var(--primary-dark), #1baa7a);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px #08917166;
+    }
+
+    .primary-btn i {
+        font-size: 1.2rem;
+    }
+
+    /* Stats Section */
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background-color: var(--card-light);
+        border-radius: var(--border-radius);
+        padding: 25px;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), #20c997);
+    }
+
+    .dark-mode .stat-card {
+        background-color: var(--card-dark);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card .icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 15px;
+    }
+
+    .stat-card h3 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+        color: var(--text-dark);
+        font-weight: 700;
+    }
+
+    .dark-mode .stat-card h3 {
+        color: var(--text-light);
+    }
+
+    .stat-card p {
+        margin: 0;
+        color: var(--secondary);
+        font-weight: 500;
+    }
+
+    /* Deliveries Section */
+    .deliveries-section {
+        margin-top: 20px;
+    }
+
+    .deliveries-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .deliveries-section-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-dark);
+    }
+
+    .dark-mode .deliveries-section-header h3 {
+        color: var(--text-light);
+    }
+
+    .deliveries-section-header p {
+        color: var(--secondary);
+        margin: 0;
+        max-width: 600px;
+    }
+
+    .view-all-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--primary);
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .view-all-btn:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .deliveries-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .delivery-card {
+        background-color: var(--card-light);
+        border-radius: var(--border-radius);
+        padding: 25px;
+        box-shadow: var(--shadow);
+        transition: var(--transition);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .delivery-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .delivery-card {
+        background-color: var(--card-dark);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .delivery-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dark-mode .delivery-card-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .delivery-card-header h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .status-badge i {
+        font-size: 0.8rem;
+    }
+
+    .status-pending {
+        background-color: var(--status-pending);
+        color: #212529;
+    }
+
+    .status-picked-up {
+        background-color: var(--status-picked-up);
+    }
+
+    .status-in-transit {
+        background-color: var(--status-in-transit);
+    }
+
+    .status-delivered {
+        background-color: var(--status-delivered);
+    }
+
+    .status-cancelled {
+        background-color: var(--status-cancelled);
+    }
+
+    .delivery-details .detail-item {
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.05);
+    }
+
+    .dark-mode .delivery-details .detail-item {
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .delivery-details .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .delivery-details .detail-item strong {
+        flex-basis: 40%;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .dark-mode .delivery-details .detail-item strong {
+        color: var(--text-light);
+    }
+
+    .delivery-details .detail-item p {
+        flex-basis: 60%;
+        margin: 0;
+        text-align: right;
+        color: var(--secondary);
+    }
+
+    .delivery-map {
+        height: 500px;
+        width: 100%;
+        border-radius: var(--border-radius);
+        margin-top: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #f8f9fa;
+    }
+
+    .dark-mode .delivery-map {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #2d2d2d;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: transparent;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .dark-mode .action-btn {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--text-light);
+    }
+
+    .action-btn:hover {
+        background: rgba(40, 167, 69, 0.1);
+        border-color: var(--primary);
+    }
+
+    .action-btn.primary {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .action-btn.primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+    }
+
+    /* Messages */
+    #loadingDeliveries, #noDeliveriesMessage, #errorMessage {
+        text-align: center;
+        margin: 40px 0;
+        font-size: 1.1em;
+        color: var(--secondary);
+        padding: 30px;
+        border-radius: var(--border-radius);
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .dark-mode #loadingDeliveries, 
+    .dark-mode #noDeliveriesMessage, 
+    .dark-mode #errorMessage {
+        background: rgba(255, 255, 255, 0.02);
+        color: #bbb;
+    }
+
+    #errorMessage {
+        color: #dc3545;
+        background: rgba(220, 53, 69, 0.1);
+        font-weight: 500;
+    }
+
+    .dark-mode #errorMessage {
+        color: #ff6b6b;
+    }
+
+    /* Footer */
+    .page-footer {
+        text-align: center;
+        padding: 25px 0;
+        font-size: 0.95rem;
+        color: var(--secondary);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        margin-top: auto;
+    }
+
+    .dark-mode .page-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        color: #aaa;
+    }
+
+    /* Overlay */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 800;
+    }
+
+    .overlay.active {
+        display: block;
+    }
+
+    /* Responsive Improvements */
+    @media (max-width: 991px) {
+        .deliveries-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        
+        .deliveries-section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .view-all-btn {
+            align-self: flex-end;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        
+        .deliveries-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .dashboard-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .user-name {
+            display: none;
+        }
+        
+        .user-profile {
+            padding: 8px 12px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .top-bar {
+            padding: 0 15px;
+        }
+        
+        .main-content {
+            padding: calc(var(--header-height) + 15px) 15px 15px;
+        }
+        
+        .dashboard-stats {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-card {
+            padding: 20px;
+        }
+        
+        .stat-card h3 {
+            font-size: 1.7rem;
+        }
+        
+        .delivery-card {
+            padding: 20px;
+        }
+        
+        .delivery-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .delivery-card-header h4 {
+            font-size: 1.1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dashboard-header,
+    .dashboard-stats,
+    .deliveries-section {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .delivery-card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .delivery-card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .delivery-card:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+
+    .delivery-card:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+</style>
+</head>
+<body>
+    <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>FikaConnect</h2>
+            <p>Sender Dashboard</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="book-new-delivery.html"><i class="fas fa-plus-circle"></i> Book New</a></li>
+                <li><a href="sender profile.html"><i class="fas fa-user-circle"></i> My Profile</a></li>
+                <li><a href="sender-active-deliveries.html"><i class="fas fa-history"></i> My Bookings</a></li>
+                <li><a href="sender-settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="contact-us.html"><i class="fas fa-headset"></i> Contact Us</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About Us</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn" id="logoutBtnSidebar"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h2>Welcome, <span id="userNameDisplay">Sender</span>!</h2>
+            <p>Your FikaConnect dashboard for managing deliveries.</p>
+        </div>
+
+        <div class="dashboard-actions">
+            <a href="book-new-delivery.html" class="primary-btn"><i class="fas fa-plus-circle"></i> Book New Delivery</a>
+     
+
+        </div>
+
+        
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <i class="icon fas fa-hourglass-half"></i>
+                <h3><span id="pendingDeliveriesCount">0</span></h3>
+                <p>Pending / In Progress</p>
+            </div>
+            <div class="stat-card">
+                <i class="icon fas fa-check-circle"></i>
+                <h3><span id="completedDeliveriesCount">0</span></h3>
+                <p>Completed Deliveries</p>
+            </div>
+            <div class="stat-card">
+                <i class="icon fas fa-money-bill-wave"></i>
+                <h3>UGX <span id="totalSpendAmount">0</span></h3>
+                <p>Total Spent</p>
+            </div>
+        </div>
+
+        <div class="deliveries-section">
+            <h3><i class="fas fa-truck-moving"></i> My Deliveries</h3>
+            <p>View the status of your active deliveries and track them in real-time.</p>
+            <div id="loadingDeliveries" style="display: none;">Loading your deliveries...</div>
+            <div id="noDeliveriesMessage" style="display: none;">You have no deliveries yet. Book one!</div>
+            <div id="errorMessage" style="display: none;"></div>
+            <div class="deliveries-grid" id="deliveriesList">
+                </div>
+             <a href="sender-active-deliveries.html" class="primary-btn view-deliveries-btn mt-4">
+                <i class="fas fa-eye"></i> View All My Deliveries
+            </a>
+        </div>
+
+        <footer class="page-footer">
+            <p>&copy; 2025 FikaConnect — Smart Logistics for East Africa</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <script type="module">
+        'use strict';
+
+        // Firebase imports - using modular SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, orderBy, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Wait for DOMContentLoaded for safety
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyDq3uO76nnqqPgPaFfXpOTEnFSXRqXneWU",
+                authDomain: "fika-connect-5f844.firebaseapp.com",
+                projectId: "fika-connect-5f844",
+                storageBucket: "fika-connect-5f844.appspot.com",
+                messagingSenderId: "124223307329",
+                appId: "1:124223307329:web:76c547b91dcd25205550c0"
+            };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            // --- DOM Elements ---
+            // Existing sidebar/theme toggles
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            // Dashboard specific elements
+            const logoutBtnSidebar = document.getElementById('logoutBtnSidebar');
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            const pendingDeliveriesCount = document.getElementById('pendingDeliveriesCount');
+            const completedDeliveriesCount = document.getElementById('completedDeliveriesCount');
+            const totalSpendAmount = document.getElementById('totalSpendAmount');
+            const deliveriesList = document.getElementById('deliveriesList'); // Container for dynamic cards
+            const loadingDeliveries = document.getElementById('loadingDeliveries');
+            const noDeliveriesMessage = document.getElementById('noDeliveriesMessage');
+            const errorMessageDiv = document.getElementById('errorMessage');
+
+            // --- Global Variables ---
+            let CURRENT_SENDER_ID = null;
+            const activeTrackingMaps = {}; // To store Leaflet map instances and their Firestore listeners
+
+            // --- Sidebar and Theme Toggle Listeners ---
+            if (menuToggle && sidebar && overlay) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                    overlay.classList.toggle('active');
+                });
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                });
+            }
+
+            if (themeToggle && body && sidebar) {
+                themeToggle.addEventListener('click', () => {
+                    body.classList.toggle('dark-mode');
+                    sidebar.classList.toggle('dark-mode'); // Apply dark mode to sidebar too
+                    const icon = themeToggle.querySelector('i');
+                    icon.classList.toggle('fa-moon');
+                    icon.classList.toggle('fa-sun');
+                });
+            }
+
+
+            // --- Logout Event Listener ---
+            if (logoutBtnSidebar) {
+                logoutBtnSidebar.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    cleanupTrackingMaps(); // Clean up maps before logging out
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                });
+            }
+
+            // --- Authentication State Listener ---
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    CURRENT_SENDER_ID = user.uid;
+                    try {
+                        const userDocRef = doc(db, "users", user.uid);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            userNameDisplay.textContent = userDocSnap.data().name || "Sender";
+                        } else {
+                            console.warn("User document not found for:", user.uid);
+                            userNameDisplay.textContent = "Sender";
+                        }
+                    } catch (error) {
+                        console.error("Error fetching user name:", error);
+                        userNameDisplay.textContent = "Sender";
+                    }
+                    fetchAndDisplayDeliveries(); // Fetch deliveries once user is authenticated
+                } else {
+                    cleanupTrackingMaps(); // Clean up maps if user signs out
+                    window.location.href = 'login.html'; // Redirect to login page
+                }
+            });
+
+            // --- Fetch and Display Deliveries ---
+            async function fetchAndDisplayDeliveries() {
+                loadingDeliveries.style.display = 'block';
+                deliveriesList.innerHTML = ''; // Clear existing cards
+                noDeliveriesMessage.style.display = 'none';
+                errorMessageDiv.style.display = 'none';
+                errorMessageDiv.textContent = '';
+
+                if (!CURRENT_SENDER_ID) {
+                    errorMessageDiv.textContent = "Error: Sender ID not available. Please log in.";
+                    errorMessageDiv.style.display = 'block';
+                    loadingDeliveries.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    const bookingsRef = collection(db, "bookings");
+                    const q = query(
+                        bookingsRef,
+                        where("customerId", "==", CURRENT_SENDER_ID),
+                        orderBy("bookingDate", "desc")
+                    );
+
+                    // Real-time listener for bookings
+                    const unsubscribeBookings = onSnapshot(q, (snapshot) => {
+                        let pendingCount = 0;
+                        let completedCount = 0;
+                        let totalSpend = 0;
+                        deliveriesList.innerHTML = ''; // Clear old content before repopulating
+                        cleanupTrackingMaps(); // Clean up old maps before rendering new ones
+
+                        if (snapshot.empty) {
+                            noDeliveriesMessage.style.display = 'block';
+                            pendingDeliveriesCount.textContent = 0;
+                            completedDeliveriesCount.textContent = 0;
+                            totalSpendAmount.textContent = 0;
+                            loadingDeliveries.style.display = 'none';
+                            return;
+                        }
+
+                        snapshot.docs.forEach(doc => {
+                            const booking = doc.data();
+                            const bookingId = doc.id;
+
+                            const status = booking.status ? booking.status.toLowerCase() : '';
+                            if (status === 'delivered' || status === 'cancelled') {
+                                completedCount++;
+                            } else {
+                                pendingCount++;
+                            }
+                            // Only add to total spend if payment is marked as Paid and fareAmount is a number
+                            if (booking.paymentStatus === 'Paid' && typeof booking.fareAmount === 'number') {
+                                totalSpend += booking.fareAmount;
+                            }
+
+                            deliveriesList.appendChild(createDeliveryCard(booking, bookingId));
+
+                            // Initialize tracking map only for active deliveries with an assigned driver
+                            if (booking.assignedDriver && (status !== 'delivered' && status !== 'cancelled')) {
+                                initializeTrackingMap(
+                                    bookingId,
+                                    booking.assignedDriver,
+                                    booking.pickupLocation,
+                                    booking.dropoffLocation
+                                );
+                            }
+                        });
+
+                        pendingDeliveriesCount.textContent = pendingCount;
+                        completedDeliveriesCount.textContent = completedCount;
+                        totalSpendAmount.textContent = totalSpend.toLocaleString('en-UG'); // Format for Ugandan Shillings
+
+                        loadingDeliveries.style.display = 'none';
+                        noDeliveriesMessage.style.display = 'none'; // Hide if there are deliveries
+                    }, (error) => {
+                        console.error("Error fetching deliveries:", error);
+                        errorMessageDiv.textContent = `Error loading deliveries: ${error.message}`;
+                        errorMessageDiv.style.display = 'block';
+                        loadingDeliveries.style.display = 'none';
+                    });
+
+                    // Store the unsubscribe function to call it later if needed (e.g., on logout)
+                    // You might want to store this in a global variable if you plan to manage
+                    // multiple onSnapshot listeners, but for now, cleanupTrackingMaps handles it.
+
+                } catch (error) {
+                    console.error("Failed to set up delivery listener:", error);
+                    errorMessageDiv.textContent = `Failed to set up delivery listener: ${error.message}`;
+                    errorMessageDiv.style.display = 'block';
+                    loadingDeliveries.style.display = 'none';
+                }
+            }
+
+            // Function to create and return a delivery card HTML element
+            function createDeliveryCard(booking, bookingId) {
+                const card = document.createElement('div');
+                card.className = 'delivery-card';
+                const statusClass = booking.status ? booking.status.toLowerCase().replace(/\s/g, '-') : 'pending';
+
+                const parcelType = booking.parcelDetails?.type || 'N/A';
+                const parcelWeight = booking.parcelDetails?.weightKg ? `${booking.parcelDetails.weightKg} kg` : 'N/A';
+                const isFragile = booking.parcelDetails?.isFragile ? 'Yes' : 'No';
+
+                const pickupName = booking.pickupLocation?.name || 'N/A';
+                const dropoffName = booking.dropoffLocation?.name || 'N/A';
+
+                const recipientName = booking.recipient?.name || 'N/A';
+                const recipientContact = booking.recipient?.contact || 'N/A';
+
+                let formattedBookingDate = 'N/A';
+                if (booking.bookingDate) {
+                    let dateObject;
+                    if (typeof booking.bookingDate.toDate === 'function') { // Firestore Timestamp
+                        dateObject = booking.bookingDate.toDate();
+                    } else if (booking.bookingDate instanceof Date) { // JavaScript Date object
+                        dateObject = booking.bookingDate;
+                    } else if (typeof booking.bookingDate === 'string') { // ISO string
+                        try {
+                            dateObject = new Date(booking.bookingDate);
+                        } catch (e) {
+                            console.warn("Could not parse bookingDate string:", booking.bookingDate);
+                            dateObject = null;
+                        }
+                    }
+
+                    if (dateObject) {
+                        formattedBookingDate = dateObject.toLocaleDateString('en-UG', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="delivery-card-header">
+                        <h4>Booking #${bookingId.substring(0, 8)}...</h4>
+                        <span class="status-badge ${statusClass}">${booking.status || 'Pending'}</span>
+                    </div>
+                    <div class="delivery-details">
+                        <div class="detail-item">
+                            <strong>Type:</strong> <p>${booking.deliveryType === 'direct_delivery' ? 'Direct Delivery' : 'Collection Point Pickup'}</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Fare:</strong> <p>UGX ${typeof booking.fareAmount === 'number' ? booking.fareAmount.toLocaleString('en-UG') : 'N/A'}</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Pickup:</strong> <p>${pickupName}</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Dropoff:</strong> <p>${dropoffName}</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Parcel:</strong> <p>${parcelType}, ${parcelWeight}, Fragile: ${isFragile}</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Recipient:</strong> <p>${recipientName} (${recipientContact})</p>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Booked On:</strong> <p>${formattedBookingDate}</p>
+                        </div>
+                        ${booking.assignedDriver ? `<div class="detail-item"><strong>Driver:</strong> <p>${booking.assignedDriverName || 'Assigned'}</p></div>` : ''}
+                    </div>
+                    ${booking.assignedDriver && (status !== 'delivered' && status !== 'cancelled') ? `<div class="delivery-map" id="map-${bookingId}"></div>` : ''}
+                `;
+                return card;
+            }
+
+            // Custom Leaflet icons
+            const driverIcon = L.icon({
+                iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            const locationIcon = L.icon({
+                iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            // Function to initialize Leaflet map for tracking
+            async function initializeTrackingMap(bookingId, driverId, pickupLoc, dropoffLoc) {
+                const mapContainer = document.getElementById(`map-${bookingId}`);
+                if (!mapContainer || activeTrackingMaps[bookingId]) {
+                    // console.warn(`Map container map-${bookingId} not found or map already initialized.`);
+                    return;
+                }
+
+                // Initialize Leaflet map
+                const map = L.map(mapContainer).setView([0.3475, 32.5822], 13); // Default view (Kampala)
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                activeTrackingMaps[bookingId] = { map: map, driverMarker: null, pickupMarker: null, dropoffMarker: null, unsubscribe: null };
+
+                // Add Pickup and Dropoff Markers
+                const latLngsToFit = [];
+                if (pickupLoc && typeof pickupLoc.lat === 'number' && typeof pickupLoc.lng === 'number') {
+                    activeTrackingMaps[bookingId].pickupMarker = L.marker([pickupLoc.lat, pickupLoc.lng], { icon: locationIcon })
+                        .addTo(map)
+                        .bindPopup(`Pickup: ${pickupLoc.name || 'N/A'}`);
+                    latLngsToFit.push([pickupLoc.lat, pickupLoc.lng]);
+                }
+                if (dropoffLoc && typeof dropoffLoc.lat === 'number' && typeof dropoffLoc.lng === 'number') {
+                    activeTrackingMaps[bookingId].dropoffMarker = L.marker([dropoffLoc.lat, dropoffLoc.lng], { icon: locationIcon })
+                        .addTo(map)
+                        .bindPopup(`Dropoff: ${dropoffLoc.name || 'N/A'}`);
+                    latLngsToFit.push([dropoffLoc.lat, dropoffLoc.lng]);
+                }
+
+                // Fit map to bounds of markers
+                if (latLngsToFit.length > 0) {
+                    map.fitBounds(L.latLngBounds(latLngsToFit).pad(0.2)); // Pad to give some space
+                }
+
+
+                // Listen for driver location updates from 'users' collection
+                const driverRef = doc(db, "users", driverId);
+                const unsubscribeDriverLocation = onSnapshot(driverRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const driverData = docSnap.data();
+                        const driverLocation = driverData.lastKnownLocation; // Assuming driver's last known location is here
+
+                        if (driverLocation && typeof driverLocation.lat === 'number' && typeof driverLocation.lng === 'number') {
+                            const driverLatLng = L.latLng(driverLocation.lat, driverLocation.lng);
+                            if (activeTrackingMaps[bookingId].driverMarker) {
+                                activeTrackingMaps[bookingId].driverMarker.setLatLng(driverLatLng);
+                            } else {
+                                activeTrackingMaps[bookingId].driverMarker = L.marker(driverLatLng, { icon: driverIcon })
+                                    .addTo(map)
+                                    .bindPopup(`Driver: ${driverData.name || 'N/A'}`);
+                            }
+                            // Only center map on driver if it's the only point or driver is moving
+                            if (latLngsToFit.length === 0) { // Only driver location
+                                map.setView(driverLatLng, map.getZoom());
+                            } else { // Adjust view to include driver, pickup, and dropoff
+                                const currentLatLngs = [...latLngsToFit, driverLatLng];
+                                map.fitBounds(L.latLngBounds(currentLatLngs).pad(0.2));
+                            }
+
+                        } else {
+                            // If driver has no location data, remove their marker
+                            if (activeTrackingMaps[bookingId].driverMarker) {
+                                map.removeLayer(activeTrackingMaps[bookingId].driverMarker);
+                                activeTrackingMaps[bookingId].driverMarker = null;
+                            }
+                        }
+                    } else {
+                        console.log(`Driver document for ID ${driverId} does not exist for tracking.`);
+                        if (activeTrackingMaps[bookingId].driverMarker) {
+                            map.removeLayer(activeTrackingMaps[bookingId].driverMarker);
+                            activeTrackingMaps[bookingId].driverMarker = null;
+                        }
+                    }
+                }, (error) => {
+                    console.error("Error listening to driver location:", error);
+                });
+
+                activeTrackingMaps[bookingId].unsubscribe = unsubscribeDriverLocation;
+            }
+
+            // Function to clean up all active map instances and their listeners
+            function cleanupTrackingMaps() {
+                for (const bookingId in activeTrackingMaps) {
+                    if (activeTrackingMaps[bookingId].unsubscribe) {
+                        activeTrackingMaps[bookingId].unsubscribe(); // Unsubscribe from Firestore listener
+                    }
+                    if (activeTrackingMaps[bookingId].map) {
+                        activeTrackingMaps[bookingId].map.remove(); // Remove Leaflet map instance
+                    }
+                    delete activeTrackingMaps[bookingId]; // Remove from tracking object
+                }
+                console.log("Cleaned up all active tracking maps.");
+            }
+
+            // Call cleanup on page unload to prevent memory leaks and unnecessary listeners
+            window.addEventListener('beforeunload', cleanupTrackingMaps);
+        });
+    </script>
+</body>
+</html>
