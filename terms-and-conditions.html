@@ -4,344 +4,242 @@
   <meta charset="utf-8" />
   <title>FikaConnect — Terms & Conditions</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light only" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --brand: #047857;        /* deep green */
-      --brand-2:#10b981;       /* light green */
-      --ink: #0f172a;          /* slate-900 */
-      --muted:#475569;         /* slate-600 */
-      --bg: #f7fdf9;           /* soft green tint */
-      --card:#ffffff;          /* white */
-      --border:#e2e8f0;        /* slate-200 */
+    :root {
+      --brand: #047857;
+      --brand-2: #10b981;
+      --ink: #0f172a;
+      --muted: #475569;
+      --bg: #f7fdf9;
+      --card: #ffffff;
+      --border: #e2e8f0;
     }
 
-    *{box-sizing:border-box}
+    * { box-sizing: border-box; }
 
-    html,body{
-      margin:0; padding:0; background:var(--bg);
-      color:var(--ink); font-family:'Poppins',system-ui,Segoe UI,Roboto,Arial,sans-serif;
-      line-height:1.65;
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Poppins', sans-serif;
+      line-height: 1.65;
     }
 
     /* Header */
-    .site-header{
-      position:sticky; top:0; z-index:50;
-      background:linear-gradient(90deg,var(--brand), #0f766e);
-      color:#fff; border-bottom:1px solid rgba(255,255,255,.08);
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: linear-gradient(90deg, var(--brand), #0f766e);
+      color: #fff;
     }
-    .header-wrap{
-      max-width:1100px; margin:0 auto; padding:14px 18px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
+
+    .header-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .brand{
-      display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
     }
-    .brand .logo{
-      width:36px; height:36px; border-radius:9px; background:#fff1; display:grid; place-items:center;
-      border:1px solid #ffffff30; font-size:18px;
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: #fff1;
+      display: grid;
+      place-items: center;
+      border: 1px solid #ffffff30;
+      font-size: 18px;
     }
-    .header-actions{display:flex; gap:10px; align-items:center}
-    .btn{
-      appearance:none; border:none; cursor:pointer;
-      padding:.65rem 1rem; border-radius:.65rem; font-weight:600;
+
+    .btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      padding: .65rem 1rem;
+      border-radius: .65rem;
+      font-weight: 600;
     }
-    .btn-outline{
-      background:transparent; color:#fff; border:1px solid #ffffff50;
+
+    .btn-outline {
+      background: transparent;
+      color: #fff;
+      border: 1px solid #ffffff50;
     }
-    .btn-light{
-      background:#fff; color:var(--brand); box-shadow:0 6px 16px rgba(2,6,23,.12);
+
+    .btn-light {
+      background: #fff;
+      color: var(--brand);
     }
-    .btn:active{transform:translateY(1px)}
 
     /* Layout */
-    .container{
-      max-width:1100px; margin:24px auto; padding:0 18px; display:grid; grid-template-columns:280px 1fr; gap:24px;
-    }
-    @media (max-width: 900px){
-      .container{grid-template-columns:1fr}
-      .toc{position:static}
+    .container {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 18px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
     }
 
-    /* Card */
-    .card{
-      background:var(--card); border:1px solid var(--border); border-radius:16px;
-      box-shadow:0 8px 24px rgba(2,6,23,.06);
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .toc {
+        display: none;
+      }
+      .toc-toggle {
+        display: block;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(2,6,23,.06);
     }
 
     /* TOC */
-    .toc{
-      position:sticky; top:84px; height:max-content; padding:16px;
+    .toc {
+      position: sticky;
+      top: 84px;
+      padding: 16px;
     }
-    .toc h3{margin:0 0 .25rem 0; color:var(--brand); font-size:1rem}
-    .toc p{margin:0 0 .75rem 0; color:var(--muted); font-size:.9rem}
-    .toc a{
-      display:block; padding:.55rem .6rem; margin:.15rem 0; border-radius:8px; color:var(--ink); text-decoration:none;
-      border:1px solid transparent; font-size:.95rem;
+
+    .toc a {
+      display: block;
+      padding: .55rem .6rem;
+      margin: .15rem 0;
+      border-radius: 8px;
+      color: var(--ink);
+      text-decoration: none;
+      border: 1px solid transparent;
+      font-size: .95rem;
     }
-    .toc a:hover{background:#f8fafc; border-color:var(--border)}
-    .meta{
-      margin-top:10px; padding:.6rem .7rem; border:1px dashed var(--border); border-radius:10px; color:var(--muted); font-size:.9rem;
-      background:#f8fffb;
+
+    .toc a:hover {
+      background: #f8fafc;
+      border-color: var(--border);
+    }
+
+    /* Mobile TOC toggle */
+    .toc-toggle {
+      display: none;
+      margin-bottom: 15px;
     }
 
     /* Content */
-    article{padding:24px}
-    h1{margin:.2rem 0 1rem; font-size:clamp(1.4rem, 2.2vw, 2rem)}
-    .lede{color:var(--muted); margin-top:.2rem}
-    .stamp{
-      display:inline-flex; align-items:center; gap:8px; font-size:.9rem; color:var(--muted);
-      background:#f1fff7; border:1px solid var(--border); padding:.35rem .6rem; border-radius:10px;
-    }
-    section{padding:16px 0; border-top:1px solid var(--border)}
-    section:first-of-type{border-top:none; padding-top:8px}
-    h2{
-      margin:.2rem 0 .2rem; color:var(--brand); font-size:clamp(1.05rem, 2vw, 1.25rem);
-    }
-    h3{margin:.2rem 0; color:#0f766e; font-size:1.02rem}
-    ul,ol{padding-left:1.1rem; margin:.4rem 0}
-    li{margin:.25rem 0}
-    .badge{
-      display:inline-block; padding:.15rem .5rem; background:#ecfeff; color:#155e75; border:1px solid #cffafe; border-radius:999px;
-      font-size:.78rem; font-weight:600;
-    }
-    .callout{
-      margin:.8rem 0; background:#f8fafc; border-left:4px solid var(--brand-2); padding:.75rem .9rem; border-radius:10px;
+    article {
+      padding: 24px;
     }
 
-    /* Footer */
-    .footer{
-      text-align:center; padding:22px 18px 36px; color:var(--muted);
+    h1 {
+      margin: .2rem 0 1rem;
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
     }
 
-    /* Small utilities */
-    .row{display:flex; flex-wrap:wrap; gap:10px}
-    .row .btn{flex:1 1 220px}
-    .divider{height:1px; background:var(--border); margin:12px 0}
+    section {
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    section:first-of-type {
+      border-top: none;
+      padding-top: 8px;
+    }
+
+    h2 {
+      margin: .2rem 0;
+      color: var(--brand);
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+    }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="site-header">
-    <div class="header-wrap">
-      <div class="brand">
-        <div class="logo">✓</div>
-        <div>FikaConnect</div>
-      </div>
-      <div class="header-actions">
-        <button class="btn btn-outline" onclick="window.history.back()">← Back</button>
-        <button class="btn btn-light" onclick="window.print()">Print / Save PDF</button>
-      </div>
+<header class="site-header">
+  <div class="header-wrap">
+    <div class="brand">
+      <div class="logo">✓</div>
+      <div>FikaConnect</div>
     </div>
-  </header>
+    <button class="btn btn-outline" onclick="window.history.back()">← Back</button>
+  </div>
+</header>
 
-  <!-- Main -->
-  <main class="container">
-    <!-- TOC -->
-    <nav class="card toc" aria-label="Table of Contents">
-      <h3>Contents</h3>
-      <p>Quickly jump to a section</p>
-      <a href="#intro">Introduction</a>
-      <a href="#eligibility">Eligibility</a>
-      <a href="#services">Our Services</a>
-      <a href="#permitted">Permitted Goods (Uganda Law)</a>
-      <a href="#prohibited">Prohibited Goods</a>
-      <a href="#pricing">Pricing & Payment</a>
-      <a href="#loss">Loss, Damage & Accidents</a>
-      <a href="#cancellation">Cancellations & Refunds</a>
-      <a href="#liability">Liability</a>
-      <a href="#disputes">Dispute Resolution</a>
-      <a href="#privacy">Data Privacy</a>
-      <a href="#termination">Account Termination</a>
-      <a href="#contact">Contact</a>
-      <div class="meta">
-        <div><strong>Effective:</strong> <span id="effectiveDate">—</span></div>
-        <div><strong>Last Updated:</strong> <span id="updatedDate">—</span></div>
-      </div>
-    </nav>
+<main class="container">
+  <!-- TOC Desktop -->
+  <nav class="card toc" id="toc">
+    <h3>Contents</h3>
+    <a href="#intro">Introduction</a>
+    <a href="#eligibility">Eligibility</a>
+    <a href="#services">Services</a>
+    <a href="#permitted">Permitted Goods</a>
+    <a href="#prohibited">Prohibited Goods</a>
+    <a href="#pricing">Pricing</a>
+  </nav>
 
-    <!-- Document -->
+  <!-- Content -->
+  <div>
+    <!-- TOC Mobile Toggle -->
+    <button class="btn btn-light toc-toggle" onclick="toggleTOC()">☰ Sections</button>
+
     <article class="card">
-      <header>
-        <h1 id="intro">Terms & Conditions</h1>
-        <div class="stamp">
-          <span>FikaConnect</span> • <span id="dateBadge">Generating date…</span>
-        </div>
-        <p class="lede">These Terms govern your access to and use of the FikaConnect platform (website, app and services). By using FikaConnect, you agree to these Terms and the laws of the Republic of Uganda.</p>
-      </header>
-
-      <section>
-        <h2>1) Definitions</h2>
-        <ul>
-          <li><strong>Platform</strong>: FikaConnect website, mobile app, and related tools.</li>
-          <li><strong>User</strong>: Any person using the Platform (senders, receivers, transporters).</li>
-          <li><strong>Transporter</strong>: Truck owners, drivers, vans, boda-boda riders registered on the Platform.</li>
-          <li><strong>Sender</strong>: Any person or entity requesting a delivery service.</li>
-          <li><strong>Receiver</strong>: The intended recipient of goods.</li>
-          <li><strong>Goods</strong>: Any parcel/package/cargo booked for delivery via the Platform.</li>
-        </ul>
-      </section>
+      <h1 id="intro">Terms & Conditions</h1>
+      <p>These Terms govern your use of the FikaConnect platform...</p>
 
       <section id="eligibility">
-        <h2>2) Eligibility</h2>
-        <ul>
-          <li>You must be at least <strong>18 years</strong> old.</li>
-          <li>Transporters must have valid driver’s licences, roadworthy certificates, and comply with the <em>Traffic and Road Safety Act</em>.</li>
-          <li>All Users must use the Platform for <strong>lawful purposes</strong> and comply with applicable Ugandan laws and regulations.</li>
-        </ul>
+        <h2>Eligibility</h2>
+        <p>You must be at least 18 years old...</p>
       </section>
 
       <section id="services">
-        <h2>3) Services Provided</h2>
-        <p>FikaConnect digitally connects senders with available transporters, provides booking & tracking tools, enables proof-of-delivery (photo/signature/code), and offers collection-point workflows. <strong>We are not a transport company</strong>; we act as a <strong>digital intermediary</strong> between parties.</p>
-        <div class="callout">
-          Tip: For high-value consignments, consider adding goods insurance and clearly declaring cargo value before dispatch.
-        </div>
+        <h2>Services</h2>
+        <p>FikaConnect connects senders with transporters...</p>
       </section>
 
       <section id="permitted">
-        <h2>4) Permitted Goods (Uganda Law Compliant)</h2>
-        <p>Subject to packaging, safety, and legal requirements, the following may be transported:</p>
-        <ul>
-          <li>Agricultural produce (e.g., maize, beans, fruits, tomatoes, matooke), fish & milk (properly packaged for perishables).</li>
-          <li>Packaged and labelled food items.</li>
-          <li>Manufactured goods, household items, clothing & textiles.</li>
-          <li>Electronics & appliances.</li>
-          <li>Building materials.</li>
-        </ul>
-        <p class="badge">Compliance: Uganda National Bureau of Standards (UNBS) labelling/packaging where applicable.</p>
+        <h2>Permitted Goods</h2>
+        <p>Allowed items under Ugandan law...</p>
       </section>
 
       <section id="prohibited">
-        <h2>5) Prohibited Goods</h2>
-        <p>The following are not allowed on the Platform:</p>
-        <ul>
-          <li>Illegal drugs/narcotics (per the <em>Narcotic Drugs and Psychotropic Substances Control Act</em>).</li>
-          <li>Firearms, explosives, ammunition (per the <em>Firearms Act</em>), and hazardous chemicals without permits.</li>
-          <li>Stolen or counterfeit goods (per the <em>Penal Code Act</em>).</li>
-          <li>Live animals without clearance (Animal Industry Department) and human remains/body parts.</li>
-          <li>Pornographic materials (per the <em>Anti-Pornography Act</em>).</li>
-        </ul>
-        <p>We reserve the right to inspect, reject, or cancel bookings that breach laws or safety requirements.</p>
+        <h2>Prohibited Goods</h2>
+        <p>Illegal items, explosives, etc...</p>
       </section>
 
       <section id="pricing">
-        <h2>6) Pricing & Payment</h2>
-        <ul>
-          <li>Fares consider distance, cargo type, urgency, and vehicle class; Platform commission may apply.</li>
-          <li>Payment methods: Mobile Money, bank transfer, or card (where supported).</li>
-          <li>Payment is due before or upon delivery unless otherwise agreed in writing.</li>
-        </ul>
-      </section>
-
-      <section id="loss">
-        <h2>7) Loss, Damage, or Accidents</h2>
-        <ul>
-          <li>Transporters must reasonably safeguard goods in their possession.</li>
-          <li>FikaConnect is not directly liable for loss/theft/damage unless caused by our gross negligence.</li>
-          <li>In case of accident, the transporter must notify the sender immediately and cooperate with authorities.</li>
-          <li>Compensation (if any) is based on declared value and agreed terms prior to dispatch.</li>
-          <li>Claims must be lodged within <strong>48 hours</strong> of delivery or notification of loss.</li>
-        </ul>
-        <div class="callout">
-          Recommendation: Insure valuable or sensitive consignments and use robust packaging suited to transit risks.
-        </div>
-      </section>
-
-      <section id="cancellation">
-        <h2>8) Cancellations & Refunds</h2>
-        <ul>
-          <li>Senders may cancel <strong>before driver assignment</strong> without charges.</li>
-          <li>Cancellations <strong>after driver assignment</strong> may attract a fee to compensate the assigned transporter.</li>
-          <li>Approved refunds are processed within <strong>5–10 business days</strong>.</li>
-        </ul>
-      </section>
-
-      <section id="liability">
-        <h2>9) Liability</h2>
-        <ul>
-          <li>We are not responsible for delays due to force majeure (weather, roadblocks, strikes, etc.).</li>
-          <li>Transporters remain fully responsible for goods in their custody and for road safety compliance.</li>
-        </ul>
-      </section>
-
-      <section id="disputes">
-        <h2>10) Dispute Resolution</h2>
-        <p>Disputes should be raised via the in-app channel first. If unresolved, they may be referred to mediation or arbitration in Uganda.</p>
-      </section>
-
-      <section id="privacy">
-        <h2>11) Data Privacy</h2>
-        <p>We collect and process personal data per the <strong>Uganda Data Protection and Privacy Act, 2019</strong>. See our Privacy Policy for details on data collection, lawful basis, retention, and user rights.</p>
-      </section>
-
-      <section id="termination">
-        <h2>12) Account Suspension/Termination</h2>
-        <p>We may suspend or terminate accounts for fraud, repeated violations, unsafe conduct, or abuse of the Platform.</p>
-      </section>
-
-      <section id="contact">
-        <h2>13) Contact</h2>
-        <div class="row" style="margin:.25rem 0 .6rem">
-          <span class="badge">Support</span>
-          <span class="badge">Compliance</span>
-          <span class="badge">Partnerships</span>
-        </div>
-        <p><strong>Email:</strong> support@fikaconnect.com</p>
-        <p><strong>Phone:</strong> +256 7XX XXX XXX</p>
-        <p><strong>Address:</strong> [Insert address], Kampala, Uganda</p>
-        <div class="divider"></div>
-        <div class="row">
-          <button class="btn btn-light" onclick="location.href='index.html'">Back to Website</button>
-          <button class="btn btn-outline" onclick="scrollTo(0,0)">Back to Top</button>
-        </div>
+        <h2>Pricing & Payment</h2>
+        <p>Pricing is based on distance, vehicle type...</p>
       </section>
     </article>
-  </main>
+  </div>
+</main>
 
-  <footer class="footer">
-    © <span id="year">2025</span> FikaConnect. All rights reserved.
-  </footer>
+<script>
+  function toggleTOC() {
+    const toc = document.getElementById('toc');
+    if (toc.style.display === 'block') {
+      toc.style.display = 'none';
+    } else {
+      toc.style.display = 'block';
+      toc.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+</script>
 
-  <script>
-    // Insert current dates (Effective + Updated) and footer year
-    (function(){
-      const now = new Date();
-      const fmt = new Intl.DateTimeFormat(undefined, { year:'numeric', month:'long', day:'numeric' });
-      const pretty = fmt.format(now);
-
-      const effective = document.getElementById('effectiveDate');
-      const updated = document.getElementById('updatedDate');
-      const badge   = document.getElementById('dateBadge');
-      const year    = document.getElementById('year');
-
-      [effective, updated, badge].forEach(el => el && (el.textContent = pretty));
-      if (year) year.textContent = now.getFullYear();
-    })();
-
-    // Enhance in-page nav: highlight active section on scroll (lightweight)
-    (function(){
-      const links = Array.from(document.querySelectorAll('.toc a'));
-      const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
-      if(!sections.length) return;
-
-      const onScroll = () => {
-        const pos = window.scrollY + 120;
-        let activeIndex = 0;
-        sections.forEach((sec,i)=>{
-          if (sec.offsetTop <= pos) activeIndex = i;
-        });
-        links.forEach((a,i)=>{
-          a.style.background = i===activeIndex ? '#f0fdf4' : 'transparent';
-          a.style.borderColor = i===activeIndex ? '#bbf7d0' : 'transparent';
-        });
-      };
-      document.addEventListener('scroll', onScroll, {passive:true});
-      onScroll();
-    })();
-  </script>
 </body>
 </html>
